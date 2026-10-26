@@ -1,0 +1,9 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+models/
+.chroma/
+.DS_Store
+.tmp_wiki_src/
+logs/

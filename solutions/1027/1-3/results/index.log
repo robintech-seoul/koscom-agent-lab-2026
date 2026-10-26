@@ -1,0 +1,6 @@
+$ python -m src.retriever --build
+
+W1027 00:45:23.558000 15661 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run2/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:08, 16.19it/s]Loading weights:  88%|████████▊ | 118/134 [00:00<00:00, 541.74it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 486.77it/s]
+새로 넣은 조항: 272

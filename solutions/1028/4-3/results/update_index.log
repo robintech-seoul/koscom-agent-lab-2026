@@ -1,0 +1,6 @@
+$ python -m day2.update_index
+
+W1027 00:30:25.428000 82347 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 2673.21it/s]
+{"before": 272, "after": 298, "added": 39, "indexed": 39, "deleted": 13, "repealed_docs": ["HB-OPS-102"], "superseded": 100}

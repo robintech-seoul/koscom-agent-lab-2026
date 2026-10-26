@@ -1,0 +1,3 @@
+# (선택, 4-1) 실행 경로 추적. Phoenix 서버는 별도 환경에서 실행: uvx arize-phoenix serve
+arize-phoenix-otel
+openinference-instrumentation-langchain

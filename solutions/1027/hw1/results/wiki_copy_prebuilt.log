@@ -1,0 +1,3 @@
+$ bash -c mkdir -p wiki && cp -R solutions/wiki/. wiki/ && cp -f wiki/SCHEMA.md wiki/SCHEMA.md && ls wiki | head
+
+cp: wiki/SCHEMA.md and wiki/SCHEMA.md are identical (not copied).

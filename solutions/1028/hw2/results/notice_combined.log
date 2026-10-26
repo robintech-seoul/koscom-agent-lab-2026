@@ -1,0 +1,7 @@
+$ python -m src.run_eval --graph day2.agents --name notice --set eval/sets/combined.jsonl --workers 2
+
+W1027 01:05:11.356000 58491 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run2/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:28,  4.57it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 274.08it/s]
+10건 → eval/results/notice_r1.jsonl (오류 0건)
+{"name": "notice_r1", "n": 10, "citation_hit": 0.7, "faithfulness": null, "context_recall": null, "stale": 0, "leaked": 0, "no_citation": 0, "refused": 2, "in_tok": 54429.3, "out_tok": 6467.6, "cost_usd": 0.009, "p50_s": 35.35, "p95_s": 45.1}

@@ -1,0 +1,7 @@
+$ python -m src.run_eval --graph src.graphs.graph_agentic --name agentic
+
+W1027 00:08:38.328000 30731 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:36,  3.66it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 223.15it/s]
+30건 → eval/results/agentic_r1.jsonl (오류 0건)
+{"name": "agentic_r1", "n": 30, "citation_hit": 0.988, "faithfulness": null, "context_recall": null, "stale": 0, "leaked": 3, "no_citation": 0, "refused": 0, "in_tok": 17477.067, "out_tok": 1426.1, "cost_usd": 0.002, "p50_s": 9.68, "p95_s": 24.18}

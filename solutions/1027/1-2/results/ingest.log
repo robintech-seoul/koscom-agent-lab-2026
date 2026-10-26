@@ -1,0 +1,5 @@
+$ python -m src.ingest
+
+문서 20개, 조항 272개 → data/parsed/articles.jsonl
+파싱 실패 문서: 0건 
+메타데이터 누락: 0건

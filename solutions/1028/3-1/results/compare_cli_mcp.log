@@ -1,0 +1,27 @@
+$ python -m day2.compare_cli_mcp
+
+  cli D01 O 4.13s
+  cli D02 O 6.83s
+  cli D03 O 4.01s
+  cli D04 O 4.11s
+  cli D05 X 4.02s
+  cli D06 O 7.63s
+  cli D07 O 4.58s
+  cli D08 O 6.79s
+  cli D09 O 3.33s
+  cli D10 O 7.93s
+  mcp D01 O 4.04s
+  mcp D02 O 5.74s
+  mcp D03 O 6.33s
+  mcp D04 O 5.6s
+  mcp D05 X 5.91s
+  mcp D06 O 7.25s
+  mcp D07 O 6.23s
+  mcp D08 O 9.66s
+  mcp D09 O 4.18s
+  mcp D10 O 8.78s
+
+| 방식 | 도구 정의 토큰 | 맞는 답 비율 | 도구 호출 수 | 인자 오류 수 | 평균 지연(초) | 질문당 입력 토큰 |
+|---|---|---|---|---|---|---|
+| A: CLI | 91 | 9/10 | 20 | 0 | 5.3 | 3028 |
+| B: MCP | 315 | 9/10 | 20 | 0 | 6.4 | 3471 |

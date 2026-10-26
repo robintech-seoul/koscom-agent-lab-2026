@@ -1,0 +1,22 @@
+# 각자 만드는 것 (배포하지 않음)
+.venv/
+.env
+models/
+*.zip
+
+# 실행하면 생기는 것
+.chroma/
+logs/
+.tmp_wiki_src/
+__pycache__/
+*.pyc
+
+# 수강생 작업 결과 (lab에서 생기는 위키, 적재 결과, 실행 결과)
+/lab/wiki/
+/lab/data/parsed/
+/lab/eval/results/*
+!/lab/eval/results/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,6 @@
+$ python -m day2.compare_runs eval/results/single_r1.jsonl eval/results/multi_seq_r1.jsonl
+
+| 결과 | 정답 근거 포함 | 출처 누락 | 중복 검색 | 평균 지연(초) | 질문당 입력 토큰 | 질문당 비용(USD) |
+|---|---|---|---|---|---|---|
+| single_r1.jsonl | 4/10 | 2 | 0 | 20.7 | 16798 | 0.003 |
+| multi_seq_r1.jsonl | 6/10 | 2 | 2 | 42.6 | 42563 | 0.007 |

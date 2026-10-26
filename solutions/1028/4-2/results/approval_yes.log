@@ -1,0 +1,9 @@
+$ python -m day2.approval_demo --answer yes
+
+W1027 01:03:32.526000 54732 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run2/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:25,  5.24it/s]Loading weights:  88%|████████▊ | 118/134 [00:00<00:00, 312.88it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 226.28it/s]
+⏸  승인 대기: 비밀 등급 문서를 인용한 답입니다. 승인하시겠습니까? (yes/no)
+   인용: {'doc': '시스템접근권한관리기준', 'article': '제5조', 'effective_date': '2025-09-15'}
+답: 관리자 계정 발급은 정보보호최고책임자(CISO)가 승인한다. 이는 시스템접근권한관리기준 제5조(시행일 2025-09-15)에 근거한다. 정보보호규정 제7조 제2항(시행일 2026-04-01)도 관리자 계정은 정보보호최고책임자의 승인을 받은 담당자에게만 발급한다고 규정한다. 다만 근거 문서에는 CISO 승인 이전의 요청 절차는 명시되어 있지 않다.
+승인 여부: True

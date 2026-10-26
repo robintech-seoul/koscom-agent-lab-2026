@@ -1,0 +1,47 @@
+$ python -m src.compare_retrieval --detail
+
+W1026 23:49:54.588000 88617 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:18,  7.06it/s]Loading weights:  84%|████████▎ | 112/134 [00:00<00:00, 353.28it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 312.16it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 6623.63it/s]
+
+상위 5건 안에 정답 조항이 들어간 질문 수 (27건 중, 정답 조항이 없는 권한 밖 문항 제외)
+값: 하나라도 들어감 / 모두 들어감
+
+| 검색 방식 | 리랭커 없음 | 리랭커 적용 |
+|---|---|---|
+| bm25 | 23 / 17 | 25 / 17 |
+| bm25_kiwi | 25 / 18 | 26 / 18 |
+| vector | 26 / 17 | 27 / 18 |
+| hybrid | 26 / 17 | 27 / 19 |
+
+문항별 (O: 모두, ◐: 일부, .: 못 찾음, +R: 리랭커 적용)
+| id | type | bm25 | bm25_kiwi | vector | hybrid | bm25+R | bm25_kiwi+R | vector+R | hybrid+R |
+|---|---|---|---|---|---|---|---|---|---|
+| Q01 | single | O | O | O | O | O | O | O | O |
+| Q02 | single | O | O | O | O | O | O | O | O |
+| Q03 | single | O | O | O | O | O | O | O | O |
+| Q04 | single | O | O | O | O | O | O | O | O |
+| Q05 | single | O | O | O | O | O | O | O | O |
+| Q06 | single | O | O | O | O | O | O | O | O |
+| Q07 | single | O | O | O | O | O | O | O | O |
+| Q08 | single | O | O | O | O | O | O | O | O |
+| Q09 | single | O | O | O | O | O | O | O | O |
+| Q10 | single | O | O | O | O | O | O | O | O |
+| Q11 | multihop | . | O | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
+| Q12 | multihop | O | O | ◐ | ◐ | O | O | ◐ | O |
+| Q13 | multihop | O | O | O | O | O | O | O | O |
+| Q14 | multihop | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
+| Q15 | multihop | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
+| Q16 | synthesis | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
+| Q17 | synthesis | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
+| Q18 | synthesis | . | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
+| Q19 | synthesis | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
+| Q20 | synthesis | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
+| Q21 | trap_revision | O | O | O | O | O | O | O | O |
+| Q22 | trap_revision | O | O | O | O | O | O | O | O |
+| Q23 | trap_revision | O | O | O | O | O | O | O | O |
+| Q24 | trap_revision | O | . | O | . | O | . | O | O |
+| Q25 | trap_paraphrase | O | O | O | O | O | O | O | O |
+| Q26 | trap_paraphrase | . | O | . | O | . | O | O | O |
+| Q27 | trap_paraphrase | . | . | O | O | . | O | O | O |

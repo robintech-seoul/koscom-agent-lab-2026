@@ -1,0 +1,4 @@
+$ python -m src.run_eval --graph solutions.graphs.sample_graph --name sample --limit 3
+
+3건 → eval/results/sample_r1.jsonl (오류 0건)
+{"name": "sample_r1", "n": 3, "citation_hit": 0.0, "faithfulness": null, "context_recall": null, "stale": 0, "leaked": 0, "no_citation": 3, "refused": 0, "in_tok": 51.333, "out_tok": 150.0, "cost_usd": 0.0, "p50_s": 3.18, "p95_s": 3.61}

@@ -1,0 +1,4 @@
+$ python -m src.run_eval --graph src.graphs.graph_wiki --name wiki
+
+30건 → eval/results/wiki_r1.jsonl (오류 0건)
+{"name": "wiki_r1", "n": 30, "citation_hit": 0.988, "faithfulness": null, "context_recall": null, "stale": 0, "leaked": 3, "no_citation": 0, "refused": 0, "in_tok": 26300.933, "out_tok": 1569.533, "cost_usd": 0.003, "p50_s": 10.75, "p95_s": 24.03}

@@ -1,0 +1,22 @@
+# 직접 쓰는 패키지 (버전 고정). requirements.lock은 이 파일로 만든다:
+#   uv pip compile requirements.in --universal --python-version 3.12 -o requirements.lock
+langgraph==1.2.17
+langchain==1.4.7
+langchain-core==1.7.0
+langchain-anthropic==1.7.6
+langchain-openai==1.7.2
+langchain-community==0.4.1
+langchain-mcp-adapters==0.3.2
+mcp==1.30.0
+ragas==0.4.3
+chromadb==1.5.9
+kiwipiepy==0.24.1
+rank-bm25==0.2.2
+sentence-transformers==6.2.0
+torch==2.14.1
+python-docx==1.2.0
+pypdf==6.21.2
+httpx==0.28.1
+python-dotenv==1.2.4
+tiktoken==0.14.0
+huggingface-hub==2.3.0

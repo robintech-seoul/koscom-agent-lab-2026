@@ -1,0 +1,15 @@
+$ python -m day2.compare_update --wiki wiki
+
+| id | 질문 | RAG | 위키 |
+|---|---|---|---|
+W1027 00:35:29.297000 93036 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:35,  3.68it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 230.04it/s]
+| U01 | 1등급 장애의 전체 시세 전송 중단 기준은 몇 분인가? | 정답 | 정답(이력 함께 인용) |
+| U02 | 정기 공지는 장 개시 몇 분 전까지 게시해야 하나? | 정답 | 정답(이력 함께 인용) |
+| U03 | 사내 문서를 외부 생성형 AI에 입력해도 되나? | 정답 | 정답 |
+| U04 | 백업및복구기준의 RPO는 현재도 유효한가? | 누락 | 누락 |
+| Q21 | 시세 전송 지연 시 참가사 통보 기준은? | 정답 | 정답 |
+| Q22 | 참가사에 장애를 팩스로 통보해도 되나? | 정답 | 정답 |
+| Q23 | 외부 기관의 시세 조회 API 호출 한도는? | 정답 | 정답 |
+| Q24 | 비밀번호는 며칠마다 바꿔야 하나? | 누락 | 정답 |

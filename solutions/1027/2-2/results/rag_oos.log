@@ -1,0 +1,7 @@
+$ python -m src.run_eval --graph src.graphs.graph_rag --name rag_oos --set eval/sets/out_of_scope.jsonl
+
+W1027 00:08:12.788000 29823 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:22,  5.75it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 303.94it/s]
+10건 → eval/results/rag_oos_r1.jsonl (오류 0건)
+{"name": "rag_oos_r1", "n": 10, "citation_hit": null, "faithfulness": null, "context_recall": null, "stale": 0, "leaked": 0, "no_citation": 0, "refused": 10, "in_tok": 3121.1, "out_tok": 129.3, "cost_usd": 0.0, "p50_s": 3.75, "p95_s": 14.78}

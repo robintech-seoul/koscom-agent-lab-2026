@@ -1,0 +1,9 @@
+$ python -m day2.approval_demo --answer no
+
+W1027 01:04:05.103000 55882 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run2/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:29,  4.51it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 277.75it/s]
+⏸  승인 대기: 비밀 등급 문서를 인용한 답입니다. 승인하시겠습니까? (yes/no)
+   인용: {'doc': '시스템접근권한관리기준', 'article': '제5조', 'effective_date': '2025-09-15'}
+답: 승인 거부: 비밀 등급 문서를 인용한 답이라 제공하지 않습니다.
+승인 여부: False

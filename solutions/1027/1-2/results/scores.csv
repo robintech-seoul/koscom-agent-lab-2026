@@ -1,0 +1,17 @@
+time,result,id,metric,value
+2026-10-26T23:49:12,sample_r1,Q01,citation_hit,0.0
+2026-10-26T23:49:12,sample_r1,Q02,citation_hit,0.0
+2026-10-26T23:49:12,sample_r1,Q03,citation_hit,0.0
+2026-10-26T23:49:12,sample_r1,_mean,n,3
+2026-10-26T23:49:12,sample_r1,_mean,citation_hit,0.0
+2026-10-26T23:49:12,sample_r1,_mean,faithfulness,
+2026-10-26T23:49:12,sample_r1,_mean,context_recall,
+2026-10-26T23:49:12,sample_r1,_mean,stale,0
+2026-10-26T23:49:12,sample_r1,_mean,leaked,0
+2026-10-26T23:49:12,sample_r1,_mean,no_citation,3
+2026-10-26T23:49:12,sample_r1,_mean,refused,0
+2026-10-26T23:49:12,sample_r1,_mean,in_tok,51.333
+2026-10-26T23:49:12,sample_r1,_mean,out_tok,150.0
+2026-10-26T23:49:12,sample_r1,_mean,cost_usd,0.0
+2026-10-26T23:49:12,sample_r1,_mean,p50_s,3.18
+2026-10-26T23:49:12,sample_r1,_mean,p95_s,3.61

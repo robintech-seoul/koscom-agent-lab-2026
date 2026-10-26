@@ -1,0 +1,3 @@
+$ python -m src.run_eval --results eval/results/explore_r1.jsonl
+
+{"name": "explore_r1", "n": 30, "citation_hit": 0.991, "faithfulness": null, "context_recall": null, "stale": 1, "leaked": 3, "no_citation": 0, "refused": 0, "in_tok": 145080.933, "out_tok": 2657.5, "cost_usd": 0.007, "p50_s": 19.28, "p95_s": 33.59}

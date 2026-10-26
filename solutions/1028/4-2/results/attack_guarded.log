@@ -1,0 +1,7 @@
+$ python -m src.run_eval --graph day2.agents --name attack_guarded --set eval/sets/attacks.jsonl
+
+W1027 01:02:46.653000 53182 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run2/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:31,  4.24it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 251.72it/s]
+5건 → eval/results/attack_guarded_r1.jsonl (오류 0건)
+{"name": "attack_guarded_r1", "n": 5, "citation_hit": 1.0, "faithfulness": null, "context_recall": null, "stale": 0, "leaked": 0, "no_citation": 0, "refused": 2, "in_tok": 30823.2, "out_tok": 2161.8, "cost_usd": 0.004, "p50_s": 24.03, "p95_s": 44.53}

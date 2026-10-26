@@ -1,0 +1,6 @@
+$ python -m day2.compare_fusion eval/results/multi_seq_r1.jsonl eval/results/multi_r1.jsonl
+
+| 결과 파일 | 출처 누락 (질문 수) | 출처 누락 (항목 수) | 중복 검색 | 중복 근거 | 질문당 토큰 | 지연 중앙값 |
+|---|---|---|---|---|---|---|
+| eval/results/multi_seq_r1.jsonl | 4 / 10 | 6 | 2 | 0 | 48,148 | 40.82초 |
+| eval/results/multi_r1.jsonl | 1 / 10 | 2 | 2 | 0 | 50,662 | 31.0초 |

@@ -1,0 +1,7 @@
+$ python -m src.run_eval --graph src.graphs.graph_rag --name rag --run 2
+
+W1027 00:46:46.521000 18857 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+Converting ColBERT model /private/tmp/claude-501/-Users-seokhyunkim-Documents-lectures-koscom-20261027-rag-multi-ai-agents/77781be7-fe80-484f-91b2-037bc0765b7e/scratchpad/_run2/models/KURE-v2 to SentenceTransformer.
+Loading weights:   0%|          | 0/134 [00:00<?, ?it/s]Loading weights:   1%|▏         | 2/134 [00:00<00:27,  4.80it/s]Loading weights:  97%|█████████▋| 130/134 [00:00<00:00, 326.92it/s]Loading weights: 100%|██████████| 134/134 [00:00<00:00, 256.59it/s]
+30건 → eval/results/rag_r2.jsonl (오류 0건)
+{"name": "rag_r2", "n": 30, "citation_hit": 0.87, "faithfulness": null, "context_recall": null, "stale": 2, "leaked": 3, "no_citation": 0, "refused": 0, "in_tok": 1875.933, "out_tok": 839.633, "cost_usd": 0.001, "p50_s": 4.79, "p95_s": 14.44}
