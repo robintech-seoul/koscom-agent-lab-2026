@@ -99,7 +99,7 @@ notepad .env
 
 ## 5. 모델 넣기
 
-임베딩 모델과 리랭커 모델을 루트의 `models/`에 넣습니다. 강사가 구글 드라이브로 공유한 `koscom_models.zip`(약 640MB)을 받아 저장소 루트(이 `SETUP.md`가 있는 폴더)에 풀면 `models/` 폴더가 생깁니다. 이 방법이 가장 빠릅니다.
+임베딩 모델과 리랭커 모델을 루트의 `models/`에 넣습니다. 강사가 구글 드라이브로 공유한 [`koscom_models.zip`](https://drive.google.com/file/d/15Y-Wntw20eCluCMrvOFvvBEdXRCgwVG2/view?usp=sharing)(약 640MB)을 받아 저장소 루트(이 `SETUP.md`가 있는 폴더)에 풀면 `models/` 폴더가 생깁니다. 이 방법이 가장 빠릅니다.
 
 ```
 models/KURE-v2/                  임베딩 모델 (약 300MB, 1-3부터 사용)
