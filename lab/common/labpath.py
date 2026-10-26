@@ -29,7 +29,16 @@ def chain(cwd: Path) -> list[Path]:
 
 
 def setup() -> None:
-    paths = [str(p) for p in chain(Path.cwd())]
+    cwd = Path.cwd().resolve()
+    try:   # 옆 폴더(lab ↔ solutions)에서 이 .venv로 실행하면 알려 준다. python 시작 때 실행되므로 오류가 나면 안 된다
+        other = cwd.relative_to(ROOT.parent).parts
+        if other and other[0] != ROOT.name and not getattr(sys, "_koscom_lab_warned", False) and (ROOT.parent / other[0] / "common" / "labpath.py").exists():
+            print(f"[경고] 지금 켜진 .venv는 {ROOT}용이다. {ROOT.parent / other[0]}의 .venv를 켜고 다시 실행한다 (SETUP.md 3절)",
+                  file=sys.stderr)
+            sys._koscom_lab_warned = True
+    except (ValueError, OSError):
+        pass
+    paths = [str(p) for p in chain(cwd)]
     for p in reversed(paths):
         if p in sys.path:
             sys.path.remove(p)

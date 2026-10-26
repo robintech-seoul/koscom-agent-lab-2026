@@ -24,7 +24,10 @@ def check(name, cond, hint=""):
 check("Python 3.12 이상", sys.version_info >= (3, 12), "Python 3.12를 설치한다")
 in_venv = sys.prefix != sys.base_prefix
 check("가상환경(.venv) 켜짐", in_venv, ".venv\\Scripts\\activate (Mac: source .venv/bin/activate)")
-if in_venv:
+own_venv = Path(sys.prefix).resolve() == (ROOT / ".venv").resolve()
+check("켜진 .venv가 이 폴더의 것", own_venv,
+      f"지금 켜진 것은 {sys.prefix}. PowerShell을 새로 열고 {ROOT / '.venv'}를 켠다")
+if own_venv:   # 다른 폴더의 .venv에는 경로 설정을 쓰지 않는다 (그 폴더 설정이 바뀌므로)
     import labpath  # noqa: E402
     pth = labpath.install()
     check("수업 폴더 경로 설정 (.venv의 koscom_lab.pth)", pth.exists(), "python common/labpath.py")

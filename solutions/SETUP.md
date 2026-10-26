@@ -71,6 +71,8 @@ uv pip install -r requirements.lock
 ```
 
 - 프롬프트 앞에 `(.venv)`가 붙으면 켜진 것입니다. **PowerShell을 새로 열 때마다** 다시 켭니다.
+- **`.venv`는 만든 폴더 전용입니다.** 실습은 `lab\.venv`만 켜고 합니다. `solutions`의 코드를 돌려 볼 때는 `solutions`에 `.venv`를 따로 만들어 켭니다. 한 번 켠 `.venv`는 `cd`로 다른 폴더에 가도 계속 켜져 있으므로, 다른 쪽 `.venv`를 켠 채 실행하면 앞 수업 코드를 못 찾거나 결과 파일이 다른 폴더의 `eval/results`에 쌓입니다. 헷갈리면 PowerShell을 새로 열고 실행할 쪽의 `.venv`를 켭니다.
+- 지금 켜진 `.venv`가 어느 폴더 것인지 확인: `python -c "import sys; print(sys.prefix)"`
 - "스크립트를 실행할 수 없습니다" 오류가 나면 한 번만 실행합니다: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 
 > Mac: `source .venv/bin/activate`
@@ -154,7 +156,7 @@ python common\scripts\check_env.py
 | `uv`, `git`, `claude` 명령을 찾을 수 없음 | 설치 후 PowerShell을 새로 연다 |
 | 한글 JSON을 읽다가 `UnicodeDecodeError` | `setx PYTHONUTF8 1` 실행 후 PowerShell을 새로 연다 |
 | `ModuleNotFoundError: No module named 'src…'` | 수업 폴더 안에서 `python -m src.…` 형식으로 실행했는지 확인. 그래도 나면 `python common\scripts\check_env.py`를 다시 실행해 경로 설정을 설치하고, 수업 폴더에 `__init__.py`가 생겼으면 지운다 |
-| 다른 폴더(예: solutions)의 코드가 실행됨 | `.venv`는 그 폴더 전용이다. `lab`과 `solutions`는 각자 루트에 `.venv`를 따로 만들고, 실행하는 쪽의 `.venv`를 켠다 |
+| 다른 폴더(예: solutions)의 코드가 실행됨, `[경고] 지금 켜진 .venv는 …용이다`가 나옴 | `.venv`는 그 폴더 전용이다. `lab`과 `solutions`는 각자 루트에 `.venv`를 따로 만들고, 실행하는 쪽의 `.venv`를 켠다 |
 | 패키지가 없다는 오류 | 프롬프트 앞에 `(.venv)`가 있는지 확인. 없으면 `.venv\Scripts\activate` |
 | LLM 호출에서 429 오류 | 여러 사람이 동시에 호출해 한도에 걸린 것. 잠시 뒤 다시 실행한다(코드가 자동으로 재시도한다) |
 | Claude Code가 API 요금으로 실행됨 | `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL` 환경 변수를 지우고 `claude`에서 구독 계정으로 로그인한다 |
