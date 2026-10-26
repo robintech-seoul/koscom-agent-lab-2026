@@ -32,6 +32,7 @@ claude                           # 처음 실행하면 로그인 안내가 나�
 ```
 
 - Claude Code는 **각자 로그인한 Claude 구독 계정으로만** 씁니다. 환경 변수 `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL`을 설정하지 않습니다. 설정되어 있으면 API 요금이 나갑니다.
+- **Claude Code 설치나 로그인이 안 되면** Claude 데스크톱 앱으로 실습합니다. 지시문을 앱에 넣어 코드를 만들고, 그 코드를 수업 폴더에 파일로 저장합니다. 헤드리스 실행(1-1 실습 ②, 2-3 실습 ②)만 할 수 없고, 그 결과는 강사 결과 파일(`solutions/…/results/`)을 씁니다. 6단계 점검에서 Claude Code 항목은 `[선택]`으로 표시되고 통과에는 영향이 없습니다.
 
 확인:
 
@@ -126,8 +127,9 @@ python common\scripts\check_env.py
 - `.env`의 BizRouter 키, DART 키(없어도 통과)
 - 모델 폴더 2개
 - 규정 원문 20개, 텍스트 사본, 평가셋 30건
-- bash(Git Bash), Claude Code 설치
-- LLM 호출 1번, Claude Code 헤드리스 실행 1번(구독 계정)
+- bash(Git Bash)
+- LLM 호출 1번
+- (선택) Claude Code 설치와 헤드리스 실행 1번(구독 계정)
 
 `[X]`가 나온 항목은 옆에 적힌 안내대로 해결한 뒤 다시 실행합니다.
 

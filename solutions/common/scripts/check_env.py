@@ -21,6 +21,11 @@ def check(name, cond, hint=""):
     ok &= bool(cond)
 
 
+def optional(name, cond, hint=""):
+    """없어도 실습은 할 수 있는 항목. 실패해도 '모두 통과'에 영향을 주지 않는다."""
+    print(f"{'[OK] ' if cond else '[선택]'} {name}" + ("" if cond else f"  → {hint}"))
+
+
 check("Python 3.12 이상", sys.version_info >= (3, 12), "Python 3.12를 설치한다")
 in_venv = sys.prefix != sys.base_prefix
 check("가상환경(.venv) 켜짐", in_venv, ".venv\\Scripts\\activate (Mac: source .venv/bin/activate)")
@@ -49,7 +54,8 @@ check("규정 원문 data/raw (PDF·HWPX·DOCX 20개)",
       len([p for p in (ROOT / "data" / "raw").rglob("*") if p.suffix in (".pdf", ".hwpx", ".docx")]) == 20, "저장소를 다시 받는다")
 check("bash (Windows는 Git Bash, 헤드리스 .sh 실행용)", shutil.which("bash"), "Git for Windows를 설치한다")
 check("평가셋 eval/questions.jsonl (30건)", sum(1 for _ in open(ROOT / "eval" / "questions.jsonl", encoding="utf-8")) == 30)
-check("Claude Code (claude 명령)", shutil.which("claude"), "npm install -g @anthropic-ai/claude-code")
+optional("Claude Code (claude 명령, 헤드리스 실행용)", shutil.which("claude"),
+         "없으면 Claude 데스크톱 앱으로 코드를 만들고, 헤드리스 실행(1-1 실습 ②, 2-3 실습 ②)은 강사 결과 파일을 쓴다")
 
 if os.environ.get("BIZROUTER_API_KEY"):
     try:
@@ -59,10 +65,15 @@ if os.environ.get("BIZROUTER_API_KEY"):
     except Exception as e:  # noqa: BLE001
         check("LLM 호출", False, str(e)[:120])
 if shutil.which("claude"):
-    sys.path.insert(0, str(ROOT / "scripts"))
+    sys.path.insert(0, str(ROOT / "common" / "scripts"))
     from claude_headless import run_claude
-    d, _ = run_claude("'준비 완료'라고만 답해", ["Read"], timeout=180)
-    check("Claude Code 헤드리스 (구독 계정)", not d.get("is_error"), str(d.get("result", ""))[:200])
+    try:
+        d, _ = run_claude("'준비 완료'라고만 답해", ["Read"], timeout=180)
+        good, msg = not d.get("is_error"), str(d.get("result", ""))[:200]
+    except Exception as e:  # noqa: BLE001
+        good, msg = False, str(e)[:200]
+    optional("Claude Code 헤드리스 (구독 계정)", good,
+             f"{msg} / 로그인이 안 되면 1-1 GUIDE의 '데스크톱 앱으로 하기'를 따른다")
 check("원문 옆 텍스트 사본 (.txt)", len(list((ROOT / "data" / "raw").rglob("*.txt"))) == 20,
       "python scripts/make_raw_text.py")
 check("리랭커 모델 models/mmarco-mMiniLMv2 (1-3 선택)", (ROOT / "models" / "mmarco-mMiniLMv2" / "config.json").exists(),
