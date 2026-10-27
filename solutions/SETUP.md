@@ -78,6 +78,17 @@ uv pip install -r requirements.lock
 
 > Mac: `source .venv/bin/activate`
 
+가상환경을 켠 상태에서 **수업 폴더 경로 설정**을 설치합니다. 이 설정이 있어야 수업 폴더(예: `1027\1-3`)에서 `python -m src.…`을 실행할 때 앞 수업 코드와 `common\`을 찾습니다.
+
+```powershell
+python common\labpath.py
+```
+
+- `설치: …\.venv\Lib\site-packages\koscom_lab.pth`가 출력되면 됩니다.
+- **`.venv`를 새로 만들면 이 명령을 다시 실행합니다.** 빠뜨리면 `ModuleNotFoundError: No module named 'src.config'`가 납니다.
+
+> Mac: `python common/labpath.py`
+
 ## 4. 키 넣기
 
 ```powershell
@@ -119,7 +130,7 @@ hf download cross-encoder/mmarco-mMiniLMv2-L12-H384-v1 --local-dir models/mmarco
 python common\scripts\check_env.py
 ```
 
-처음 실행할 때 **수업 폴더 경로 설정**(`.venv` 안의 `koscom_lab.pth`)도 함께 설치합니다. 이 설정이 있어야 수업 폴더에서 앞 수업의 코드를 찾습니다. `.venv`를 새로 만들었으면 이 점검을 다시 실행합니다.
+3단계의 **수업 폴더 경로 설정**(`koscom_lab.pth`)이 빠져 있으면 여기서도 설치합니다. `.venv`를 새로 만들었으면 이 점검을 다시 실행합니다.
 
 마지막 줄에 **모두 통과**가 나오면 준비가 끝났습니다. 점검하는 항목은 아래와 같습니다.
 
@@ -157,7 +168,7 @@ python common\scripts\check_env.py
 |---|---|
 | `uv`, `git`, `claude` 명령을 찾을 수 없음 | 설치 후 PowerShell을 새로 연다 |
 | 한글 JSON을 읽다가 `UnicodeDecodeError` | `setx PYTHONUTF8 1` 실행 후 PowerShell을 새로 연다 |
-| `ModuleNotFoundError: No module named 'src…'` | 수업 폴더 안에서 `python -m src.…` 형식으로 실행했는지 확인. 그래도 나면 `python common\scripts\check_env.py`를 다시 실행해 경로 설정을 설치하고, 수업 폴더에 `__init__.py`가 생겼으면 지운다 |
+| `ModuleNotFoundError: No module named 'src…'` | 수업 폴더 안에서 `python -m src.…` 형식으로 실행했는지 확인. 그래도 나면 저장소 루트에서 `python common\labpath.py`를 실행해 경로 설정을 설치하고(`.venv`를 새로 만든 뒤에는 꼭 필요), 수업 폴더에 `__init__.py`가 생겼으면 지운다 |
 | 다른 폴더(예: solutions)의 코드가 실행됨, `[경고] 지금 켜진 .venv는 …용이다`가 나옴 | `.venv`는 그 폴더 전용이다. `lab`과 `solutions`는 각자 루트에 `.venv`를 따로 만들고, 실행하는 쪽의 `.venv`를 켠다 |
 | 패키지가 없다는 오류 | 프롬프트 앞에 `(.venv)`가 있는지 확인. 없으면 `.venv\Scripts\activate` |
 | LLM 호출에서 429 오류 | 여러 사람이 동시에 호출해 한도에 걸린 것. 잠시 뒤 다시 실행한다(코드가 자동으로 재시도한다) |
