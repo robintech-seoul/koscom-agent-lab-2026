@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3-3 실행 명령</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 위에서 아래로 단계 순서. 단계마다 명령 블록(복사 버튼) + 설명 + 정상 출력. 밝은 단일 테마 */
+:root {
+  color-scheme: light;
+  --bg: #f6f8f7;
+  --paper: #ffffff;
+  --ink: #1b2422;
+  --muted: #5a6864;
+  --line: #dce3e0;
+  --accent: #2f6f63;
+  --term-bg: #f0f4f2;
+  --term-ink: #18302b;
+  --ok-bg: #e7f3ec; --ok: #2a7146;
+  --sub-bg: #e8eef8; --sub: #2f4f86;
+  --prompt-bg: #f5f2fa; --prompt-ink: #2d2540;
+  --key-bg: #fbf0e1; --key: #9a5a12;
+  --sans: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", Consolas, ui-monospace, Menlo, monospace;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15.5px; line-height: 1.65; }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 36px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+h1 { font-size: 28px; margin: 4px 0 0; text-wrap: balance; }
+.lead { color: var(--muted); margin: 8px 0 0; max-width: 66ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.fact { font-size: 13px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; }
+.fact b { font-weight: 600; }
+.step { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 22px 22px 20px; display: grid; gap: 14px; min-width: 0; }
+.step-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.no { font-family: var(--mono); font-weight: 500; color: var(--accent); font-size: 15px; }
+.step h2 { font-size: 19px; margin: 0; font-weight: 600; text-wrap: balance; }
+.badge { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.badge.free { background: var(--ok-bg); color: var(--ok); }
+.badge.key { background: var(--key-bg); color: var(--key); }
+.badge.opt { background: var(--term-bg); color: var(--muted); }
+.sub { font-size: 14px; font-weight: 600; color: var(--muted); margin: 4px 0 -6px; }
+.cmd { position: relative; background: var(--term-bg); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.cmd pre { margin: 0; padding: 12px 84px 12px 14px; font-family: var(--mono); font-size: 14px; color: var(--term-ink); overflow-x: auto; line-height: 1.7; }
+.cmd .c { color: var(--muted); }
+.copy { position: absolute; top: 8px; right: 8px; font: 500 12px var(--sans); background: var(--paper); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--accent); }
+.copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+li { max-width: 70ch; }
+.out { font-family: var(--mono); font-size: 13.5px; background: var(--ok-bg); color: var(--ok); border-radius: 8px; padding: 10px 14px; overflow-x: auto; white-space: pre; }
+.out-lbl { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: -8px; }
+code { font-family: var(--mono); font-size: .92em; background: var(--term-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.note { font-size: 14px; color: var(--muted); }
+.trouble { display: grid; gap: 8px; }
+.trouble div { display: grid; grid-template-columns: minmax(0, 15em) minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14.5px; }
+.trouble div:first-child { border-top: 0; }
+.trouble b { font-weight: 600; }
+@media (max-width: 560px) {
+  h1 { font-size: 23px; }
+  .step { padding: 18px 16px; }
+  .trouble div { grid-template-columns: 1fr; gap: 2px; }
+}
+.badge.sub { background: var(--sub-bg); color: var(--sub); }
+.shell { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; color: var(--muted); margin-bottom: -10px; }
+.cmd.prompt { background: var(--prompt-bg); }
+.cmd.prompt pre { color: var(--prompt-ink); font-family: var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; }
+.foot { font-size: 13px; color: var(--muted); margin: 0; }
+.step > .note { margin: 0; }
+ul ul { margin-top: 4px; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">KOSCOM 과정1 · 1028 / 3-3 · Windows</div>
+    <h1>3-3 내부·외부 지식 결합 실행 명령</h1>
+    <p class="lead">근거 목록(evidence)을 state에 두어 모든 에이전트가 공유하게 하고, 조사는 병렬로, 최종 답은 writer 하나만 쓰게 바꿉니다. 3-2와 출처 누락, 중복 검색 수를 비교합니다.</p>
+    <div class="facts"><span class="fact">저장소 <b>C:\koscom-agent-lab-2026\lab</b></span><span class="fact">작업 폴더 <b>lab\1028\3-3</b></span><span class="fact">결과 <b>multi_r1.jsonl</b>, <b>multi_q30_r1.jsonl</b></span></div>
+  </header>
+  <section class="step"><div class="step-head"><span class="no">0</span><h2>준비</h2></div><div class="shell">PowerShell</div><div class="cmd"><pre>cd C:\koscom-agent-lab-2026\lab
+.venv\Scripts\activate
+cd 1028\3-3</pre><button class="copy" type="button">복사</button></div><ul><li>프롬프트 앞에 <code>(.venv)</code>가 붙으면 가상환경이 켜진 것입니다. PowerShell을 새로 열 때마다 다시 켭니다.</li></ul><div class="sub">고치기 전에 3-2의 agents.py를 이 폴더로 복사</div><div class="shell">PowerShell</div><div class="cmd"><pre>mkdir day2 -Force
+copy ..\3-2\day2\agents.py day2\</pre><button class="copy" type="button">복사</button></div><ul><li>3-2의 원본은 그대로 두고, 이 폴더의 복사본을 고칩니다. 이 폴더에서 실행하면 3-3의 <code>agents.py</code>가 먼저 쓰입니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">+</span><h2>정답 코드로 맞출 때</h2><span class="badge opt">선택</span></div><p class="note">막혔을 때 정답으로 맞춥니다. <b>점심 전에 <code>agents.py</code>가 동작해야</b> 오후 4-1부터 과제 2까지 진행할 수 있습니다.</p><div class="shell">PowerShell</div><div class="cmd"><pre>mkdir day2 -Force
+copy C:\koscom-agent-lab-2026\solutions\1028\3-3\day2\agents.py day2\
+copy C:\koscom-agent-lab-2026\solutions\1028\3-3\day2\compare_fusion.py day2\</pre><button class="copy" type="button">복사</button></div><ul><li><code>__init__.py</code>는 만들지 않습니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">1</span><h2>evidence state와 병렬 조사 · 실습 ①</h2><span class="badge sub">Claude 구독 계정</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>claude</pre><button class="copy" type="button">복사</button></div><div class="shell">Claude Code에 입력</div><div class="cmd prompt"><pre>agents.py의 state에 evidence 리스트(source_type, doc_or_rcept, article_or_date,
+as_of, collected_by)를 추가해줘. 조사 노드들은 Send로 병렬 실행하고
+writer 노드 하나만 최종 답을 작성. 같은 근거는 중복 제거.</pre><button class="copy" type="button">복사</button></div><ul><li>정답 코드에서는 파일 위쪽의 <code>PARALLEL = True</code>, <code>DEDUPE = True</code>가 3-2와 다른 부분입니다. 병렬 실행에서 오류가 나면 <code>PARALLEL = False</code>로 바꿔 진행합니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">2</span><h2>결합 질문 10건</h2><span class="badge key">BizRouter 키 필요</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>python -m src.run_eval --graph day2.agents --name multi --set eval/sets/combined.jsonl</pre><button class="copy" type="button">복사</button></div><div class="out-lbl">정상 출력</div><div class="out">10건 → eval/results/multi_r1.jsonl (오류 0건)
+{&quot;name&quot;: &quot;multi_r1&quot;, &quot;n&quot;: 10, &quot;citation_hit&quot;: 0.9, ... &quot;leaked&quot;: 1, ... &quot;refused&quot;: 1, &quot;in_tok&quot;: 45250.3, ... &quot;p50_s&quot;: 30.52, ...}</div></section><section class="step"><div class="step-head"><span class="no">3</span><h2>3-2와 비교 · 실습 ②</h2><span class="badge free">키 필요 없음</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>python -m day2.compare_fusion eval/results/multi_seq_r1.jsonl eval/results/multi_r1.jsonl</pre><button class="copy" type="button">복사</button></div><ul><li>출처 누락: 정답에 필요한 규정 조항과 공시 접수번호 중 답의 인용에 빠진 것</li><li>중복 검색: 한 질문 안에서 같은 도구를 같은 인자로 다시 부른 횟수</li></ul><div class="out-lbl">기록된 출력</div><div class="out">| 결과 파일 | 출처 누락 (질문 수) | 출처 누락 (항목 수) | 중복 검색 | 중복 근거 | 질문당 토큰 | 지연 중앙값 |
+| multi_seq_r1.jsonl | 4 / 10 | 6 | 2 | 0 | 48,148 | 40.82초 |
+| multi_r1.jsonl     | 1 / 10 | 2 | 2 | 0 | 50,662 | 31.0초  |</div><ul><li>기록에서는 출처 누락이 4건에서 1건으로 줄었지만 0건은 아니고, 중복 검색 수는 줄지 않았습니다. 확인 기준과 다른 점을 결과 그대로 적습니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">4</span><h2>평가셋 30건 · 과제 2 비교용</h2><span class="badge key">BizRouter 키 필요</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>python -m src.run_eval --graph day2.agents --name multi_q30</pre><button class="copy" type="button">복사</button></div><ul><li>과제 2에서 담당 에이전트를 추가한 뒤 회귀를 확인할 때 &quot;추가 전&quot; 점수로 씁니다. 시간이 없으면 점심시간에 돌립니다.</li></ul><div class="out-lbl">정상 출력</div><div class="out">30건 → eval/results/multi_q30_r1.jsonl (오류 0건)
+{&quot;name&quot;: &quot;multi_q30_r1&quot;, &quot;n&quot;: 30, &quot;citation_hit&quot;: 0.917, ... &quot;stale&quot;: 0, &quot;leaked&quot;: 0, ... &quot;refused&quot;: 5, ... &quot;p95_s&quot;: 52.02}</div></section><section class="step"><div class="step-head"><span class="no">+</span><h2>앞 수업 결과 파일이 없을 때</h2><span class="badge opt">선택</span></div><p class="note">3-2의 결과 파일이 없어서 비교할 수 없을 때 강사 결과를 복사합니다.</p><div class="shell">PowerShell</div><div class="cmd"><pre>mkdir C:\koscom-agent-lab-2026\lab\eval\results -Force
+copy C:\koscom-agent-lab-2026\solutions\eval\results\multi_seq_r1.jsonl C:\koscom-agent-lab-2026\lab\eval\results\</pre><button class="copy" type="button">복사</button></div></section>
+  <section class="step"><div class="step-head"><h2>막힐 때</h2></div><div class="trouble"><div><b><code>No module named &#x27;src…&#x27;</code> 또는 <code>&#x27;day2…&#x27;</code></b><span>수업 폴더 안에서 <code>python -m day2.…</code>, <code>python -m src.…</code> 형식으로 실행했는지 확인합니다. 그래도 나면 <code>lab</code> 폴더에서 <code>python common\labpath.py</code>를 실행합니다. 수업 폴더에 <code>__init__.py</code>가 생겼으면 지웁니다.</span></div><div><b>1일차 코드를 못 찾는다는 오류</b><span><code>src.tools</code>, <code>src.answer_schema</code>, <code>src.retriever</code> 등은 1027 수업 폴더의 코드입니다. 3-1 페이지의 &quot;1일차 코드가 없을 때&quot;로 맞춥니다.</span></div><div><b>병렬 실행 오류</b><span><code>day2\agents.py</code>의 <code>PARALLEL = True</code>를 <code>False</code>로 바꿔 순차 실행합니다.</span></div><div><b>고친 내용이 반영되지 않음</b><span>3-3 폴더에서 실행했는지, <code>day2\agents.py</code>가 이 폴더에 있는지 확인합니다.</span></div><div><b>키 오류</b><span><code>lab\.env</code>에 <code>BIZROUTER_API_KEY</code>가 들어 있는지 확인합니다. 없으면 <code>lab</code> 폴더에서 <code>copy .env.example .env</code> 후 <code>notepad .env</code>.</span></div><div><b>429 오류</b><span>여러 명이 동시에 호출해 한도에 걸린 것입니다. 코드가 기다렸다 자동으로 다시 시도합니다.</span></div></div></section>
+  <p class="foot">명령의 기준은 이 폴더의 <code>GUIDE.md</code>와 <code>solutions\1028\3-3\results\</code>의 실행 기록(각 <code>.log</code> 첫 줄)입니다.</p>
+</div>
+<script>
+document.querySelectorAll(".copy").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const pre = btn.parentElement.querySelector("pre");
+    const text = pre.innerText.trim();
+    const done = () => { btn.textContent = "복사됨"; setTimeout(() => { btn.textContent = "복사"; }, 1500); };
+    const fallback = () => {
+      const r = document.createRange(); r.selectNodeContents(pre);
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Ctrl+C";
+    };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+  });
+});
+</script>
+</body>
+</html>
