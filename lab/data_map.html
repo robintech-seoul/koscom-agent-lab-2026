@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>실습 데이터 지도</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f8f7; --paper: #ffffff; --ink: #1b2422; --muted: #5a6864; --line: #dce3e0;
+  --accent: #2f6f63; --soft: #f0f4f2;
+  --sans: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", Consolas, ui-monospace, Menlo, monospace;
+}
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 32px 16px 56px; display: grid; gap: 24px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+h1 { font-size: 26px; margin: 4px 0 0; }
+h2 { font-size: 18px; margin: 0 0 10px; font-weight: 600; }
+.lead { color: var(--muted); margin: 8px 0 0; max-width: 70ch; }
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12.5px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.s { font-family: var(--mono); color: var(--accent); white-space: nowrap; }
+code { font-family: var(--mono); font-size: 13px; background: var(--soft); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+.flow { font-family: var(--mono); font-size: 13.5px; background: var(--soft); border-radius: 8px; padding: 12px 14px; white-space: pre; overflow-x: auto; margin: 0; }
+.note { font-size: 13.5px; color: var(--muted); margin: 10px 0 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.lifeline { overflow-x: auto; margin-bottom: 16px; }
+#life { min-width: 860px; }
+#life th.col { text-align: center; font-family: var(--mono); font-size: 12px; color: var(--accent); padding: 6px 2px; }
+#life td { padding: 7px 2px; }
+#life td.nm, #life th.nm { padding-right: 12px; min-width: 210px; }
+#life .where { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+#life td.cell { text-align: center; position: relative; width: 44px; vertical-align: middle; }
+#life td.cell.on::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 3px solid #cfe2da; z-index: 0; }
+#life td.cell.first::before { left: 50%; }
+#life td.cell.last::before { right: 50%; }
+#life .d2 { border-left: 2px solid var(--line); }
+.mk { font-style: normal; position: relative; z-index: 1; display: inline-block; width: 22px; line-height: 22px; border-radius: 50%; background: var(--paper); font-size: 15px; }
+.mk.make { color: var(--accent); }
+.mk.edit { color: #a8661c; }
+.mk.use { color: #6f8580; }
+.tag { font-style: normal; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; margin-right: 4px; }
+.tag.code { background: #e3efe9; color: var(--accent); }
+.tag.file { background: #fbf0e1; color: #9a5a12; }
+table.deps { margin-top: 6px; }
+.warn { background: #fbf0e1; border: 1px solid #ecd3ad; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #5a3a0c; margin-bottom: 14px; }
+.warn pre { font-family: var(--mono); font-size: 12.5px; margin: 8px 0 0; white-space: pre; overflow-x: auto; color: #3d2a0a; }
+.day td { background: var(--soft); font-weight: 600; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">KOSCOM 과정1 · 실습 데이터와 결과 위치</div>
+    <h1>실습 데이터 지도</h1>
+    <p class="lead">가상 회사 "한빛시장정보(주)"의 내부 규정 20건을 테스트 데이터로 만들었습니다. 같은 질문 30건을 여러 검색 방식으로 풀고, 결과를 같은 형식의 파일로 남겨 비교합니다. 경로는 모두 저장소 루트(<code>lab\</code>) 기준입니다.</p>
+  </header>
+
+  <section class="panel">
+    <h2>흐름</h2>
+<pre class="flow">data\raw\ (원문 20건) ──1-2 ingest──▶ data\parsed\articles.jsonl ──1-3 색인──▶ .chroma\
+data\regs_all.md (합본) ─────────────────────────────────────────────▶ 1-1 기준선
+eval\questions.jsonl (질문 30건) ──각 방식 실행──▶ eval\results\&lt;방식&gt;_r&lt;회차&gt;.jsonl ──채점──▶ eval\results\scores.csv</pre>
+  </section>
+
+  <section class="panel">
+    <h2>입력 데이터</h2>
+    <table>
+      <tr><th>위치</th><th>내용</th></tr>
+      <tr><td><code>data\raw\public\</code></td><td>일반 등급 원문 10건</td></tr>
+      <tr><td><code>data\raw\internal\</code></td><td>대외비 원문 7건</td></tr>
+      <tr><td><code>data\raw\secret\</code></td><td>비밀 원문 3건. 폴더가 곧 보안 등급. PDF 10, DOCX 7, HWPX 3이고 각각 옆에 <code>.txt</code> 사본이 있음</td></tr>
+      <tr><td><code>data\regs_all.md</code></td><td>원문 전체를 한 파일로 합친 것(개정 전 판 포함). 기준선용</td></tr>
+      <tr><td><code>data\updates\</code></td><td>신규·개정·폐지 문서(4-3)</td></tr>
+      <tr><td><code>data\dart_cache\</code>, <code>data\companies.json</code></td><td>녹화해 둔 DART 공시 응답 11건, 회사 목록(3-1)</td></tr>
+      <tr><td><code>data\wiki\</code>, <code>data\wiki_updated\</code></td><td>미리 만든 위키와 개정 반영 위키(hw1, 4-3)</td></tr>
+      <tr><td><code>eval\questions.jsonl</code></td><td>평가 질문 30건과 정답 조항</td></tr>
+      <tr><td><code>eval\sets\</code></td><td>문서 밖 10, 결합 10, DART 10, 공격 5, 개정 반영 질문</td></tr>
+      <tr><td><code>eval\human_labels.csv</code></td><td>사람 채점 10건(2-1)</td></tr>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>방식별 입력과 결과 파일</h2>
+    <table>
+      <tr><th>수업</th><th>방식</th><th>읽는 것</th><th>결과 (<code>eval\results\</code> 아래)</th></tr>
+      <tr class="day"><td colspan="4">1일차 1027</td></tr>
+      <tr><td class="s">1-1</td><td>통째 넣기 기준선</td><td><code>regs_all.md</code></td><td><code>baseline_r1</code>, <code>baseline_r2</code></td></tr>
+      <tr><td class="s">1-2</td><td>조항 단위 적재</td><td><code>data\raw\</code></td><td><code>data\parsed\articles.jsonl</code> (272조항)</td></tr>
+      <tr><td class="s">1-3</td><td>하이브리드 RAG</td><td><code>articles.jsonl</code> → <code>.chroma\</code></td><td><code>rag_r1</code>, <code>rag_r2</code></td></tr>
+      <tr><td class="s">2-1</td><td>RAGAS 채점</td><td>위 결과 파일</td><td><code>scores.csv</code>에 점수 추가</td></tr>
+      <tr><td class="s">2-2</td><td>인용 + 거부</td><td><code>.chroma\</code>, <code>eval\sets\out_of_scope.jsonl</code></td><td><code>rag_oos_r1</code>, <code>rag_cite_r1</code></td></tr>
+      <tr><td class="s">2-3</td><td>에이전틱 검색</td><td><code>data\raw\</code>의 <code>.txt</code> + <code>.chroma\</code></td><td><code>agentic_r1</code>, (선택) <code>explore_r1</code></td></tr>
+      <tr><td class="s">hw1</td><td>llm-wiki</td><td><code>wiki\</code> (없으면 <code>data\wiki\</code>)</td><td><code>wiki_r1</code></td></tr>
+      <tr class="day"><td colspan="4">2일차 1028</td></tr>
+      <tr><td class="s">3-1</td><td>DART 도구 (CLI / MCP)</td><td><code>dart_cache\</code>, <code>eval\sets\dart.jsonl</code></td><td><code>cli_vs_mcp_r1</code></td></tr>
+      <tr><td class="s">3-2</td><td>단일 에이전트 vs 멀티</td><td>규정 + DART</td><td><code>single_r1</code>, <code>multi_seq_r1</code></td></tr>
+      <tr><td class="s">3-3</td><td>병렬 멀티 에이전트</td><td>규정 + DART</td><td><code>multi_r1</code>, <code>multi_q30_r1</code></td></tr>
+      <tr><td class="s">4-2</td><td>권한과 공격 방어</td><td><code>eval\sets\attacks.jsonl</code></td><td><code>attack_noguard_r1</code>, <code>attack_guarded_r1</code></td></tr>
+      <tr><td class="s">4-3</td><td>문서 갱신 반영</td><td><code>data\updates\</code>, <code>wiki_updated\</code></td><td><code>rag_updated_r1</code>, <code>wiki_updated_r1</code></td></tr>
+      <tr><td class="s">hw2</td><td>공지 초안 에이전트</td><td>규정 + DART</td><td><code>notice_r1</code>, <code>notice_q30_r1</code></td></tr>
+    </table>
+    <p class="note">결과 파일은 모두 <code>.jsonl</code>이고 한 줄이 질문 1건입니다(답, 인용, 토큰, 비용, 지연). 채점 요약은 <code>eval\results\scores.csv</code>에 쌓입니다. 강사가 돌린 같은 이름의 결과는 <code>solutions\eval\results\</code>와 <code>solutions\&lt;날짜&gt;\&lt;수업&gt;\results\</code>에 있습니다.</p>
+  </section>
+
+  <section class="panel">
+    <h2>앞 수업 결과를 뒤에서 쓰는 관계</h2>
+    <div class="warn"><b>1-1 헤드리스를 못 돌렸으면 1-2 전에 기준선 결과부터 복사합니다.</b> 1-2 러너, 2-1 채점, hw1 점수표, 4-1 비용표가 이 파일을 읽습니다. 질문 30건의 답이 한 줄씩 들어 있습니다.
+<pre>copy C:\koscom-agent-lab-2026\solutions\1027\1-1\results\baseline_r1.jsonl C:\koscom-agent-lab-2026\lab\eval\results\
+copy C:\koscom-agent-lab-2026\solutions\1027\1-1\results\baseline_r2.jsonl C:\koscom-agent-lab-2026\lab\eval\results\</pre></div>
+    <p class="note" style="margin:0 0 12px">가로는 수업 순서, 세로는 수업에서 만드는 것입니다. 막대가 이어진 구간 동안 그 결과물이 계속 쓰입니다.</p>
+    <div class="legend"><span><i class="mk make">●</i>만듦</span><span><i class="mk edit">◐</i>복사해서 고쳐 씀</span><span><i class="mk use">○</i>가져다 씀</span><span><i class="tag code">코드</i><i class="tag file">결과·데이터</i></span></div>
+    <div class="lifeline"><table id="life"></table></div>
+    <table class="deps">
+      <tr><th>앞 수업이 안 끝났을 때</th><th>solutions에서 가져올 것</th></tr>
+      <tr><td><b>1-2</b> 적재를 못 함</td><td><code>python -m src.ingest</code>만 다시 실행하거나 <code>1027\1-2\src\</code> 복사. 1-3 이후 검색 전부가 <code>articles.jsonl</code>에 기댑니다</td></tr>
+      <tr><td><b>1-3</b> 검색기를 못 만듦</td><td><code>1027\1-3\src\retriever.py</code>. 2-3, 3-2, 3-3, 4-3, hw2가 씁니다</td></tr>
+      <tr><td><b>2-2</b> 스키마를 못 만듦</td><td><code>1027\2-2\src\answer_schema.py</code>. 2-3 이후 모든 그래프가 씁니다</td></tr>
+      <tr><td><b>3-3</b> 멀티 에이전트를 못 만듦</td><td><code>1028\3-3\day2\agents.py</code>. 4-2와 hw2가 씁니다</td></tr>
+      <tr><td>결과 파일이 없음</td><td><code>solutions\eval\results\</code>의 같은 이름 파일을 <code>lab\eval\results\</code>로 복사</td></tr>
+    </table>
+  </section>
+</div>
+<script>
+const COLS = ["1-1","1-2","1-3","2-1","2-2","2-3","hw1","3-1","3-2","3-3","4-1","4-2","4-3","hw2"];
+// [이름, 종류, 위치, {수업: "make"|"edit"|"use"}]
+const ROWS = [
+  ["기준선 결과", "file", "eval\\results\\baseline_r1·r2", {"1-1":"make","1-2":"use","2-1":"use","hw1":"use","4-1":"use"}],
+  ["조항 파일", "file", "data\\parsed\\articles.jsonl", {"1-2":"make","1-3":"use","4-3":"use"}],
+  ["평가 러너", "code", "1027\\1-2\\src\\run_eval.py", {"1-2":"make","1-3":"use","2-1":"use","2-2":"use","2-3":"use","hw1":"use","3-2":"use","4-1":"use","4-3":"use"}],
+  ["적재 함수", "code", "1027\\1-2\\src\\ingest.py", {"1-2":"make","2-3":"use","4-3":"use"}],
+  ["검색기 + 색인", "code", "1027\\1-3\\src\\retriever.py, .chroma\\", {"1-3":"make","2-2":"use","2-3":"use","3-2":"use","3-3":"use","4-3":"use","hw2":"use"}],
+  ["RAG 그래프", "code", "src\\graphs\\graph_rag.py", {"1-3":"make","2-2":"edit","4-3":"use"}],
+  ["RAG 결과", "file", "eval\\results\\rag_r1·r2", {"1-3":"make","2-1":"use","hw1":"use"}],
+  ["RAGAS 채점", "code", "1027\\2-1\\src\\ragas_score.py", {"2-1":"make","2-2":"use"}],
+  ["답변 스키마", "code", "1027\\2-2\\src\\answer_schema.py", {"2-2":"make","2-3":"use","hw1":"use","3-2":"use","3-3":"use","hw2":"use"}],
+  ["검색 도구", "code", "1027\\2-3\\src\\tools.py", {"2-3":"make","hw1":"use","3-1":"use","3-2":"use","3-3":"use","hw2":"use"}],
+  ["에이전틱 그래프", "code", "src\\graphs\\graph_agentic.py", {"2-3":"make","3-2":"use"}],
+  ["위키 + 위키 그래프", "code", "wiki\\, src\\graphs\\graph_wiki.py", {"hw1":"make","3-2":"use","4-3":"use"}],
+  ["4방식 점수표", "file", "python -m src.score_table", {"hw1":"make","3-1":"use"}],
+  ["DART 도구", "code", "1028\\3-1\\day2\\dart_mcp.py 등", {"3-1":"make","3-2":"use","3-3":"use","hw2":"use"}],
+  ["멀티 에이전트", "code", "day2\\agents.py", {"3-2":"make","3-3":"edit","4-1":"use","4-2":"use","hw2":"edit"}],
+  ["4장 결과(비용·권한·갱신)", "file", "eval\\results\\", {"4-1":"make","4-2":"make","4-3":"make","hw2":"use"}],
+];
+const SYM = {make:"●", edit:"◐", use:"○"};
+let h = '<thead><tr><th class="nm">만드는 것</th>' + COLS.map((c,i) => `<th class="${i===7?"d2 ":""}col">${c}</th>`).join("") + "</tr></thead><tbody>";
+for (const [name, kind, where, m] of ROWS) {
+  const idx = COLS.map((c,i) => m[c] ? i : -1).filter(i => i >= 0);
+  const a = Math.min(...idx), b = Math.max(...idx);
+  h += `<tr><td class="nm"><span class="tag ${kind}">${kind==="code"?"코드":"결과"}</span> <b>${name}</b><div class="where">${where}</div></td>`;
+  COLS.forEach((c,i) => {
+    const cls = [i===7?"d2":"", i>=a && i<=b ? "on" : "", i===a?"first":"", i===b?"last":""].join(" ");
+    h += `<td class="cell ${cls}">${m[c] ? `<i class="mk ${m[c]}" title="${c}: ${name}">${SYM[m[c]]}</i>` : ""}</td>`;
+  });
+  h += "</tr>";
+}
+document.getElementById("life").innerHTML = h + "</tbody>";
+</script>
+</body>
+</html>
