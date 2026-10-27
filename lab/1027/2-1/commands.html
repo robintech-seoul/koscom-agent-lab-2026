@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2-1 실행 명령</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 위에서 아래로 단계 순서. 단계마다 명령 블록(복사 버튼) + 설명 + 정상 출력. 밝은 단일 테마 */
+:root {
+  color-scheme: light;
+  --bg: #f6f8f7;
+  --paper: #ffffff;
+  --ink: #1b2422;
+  --muted: #5a6864;
+  --line: #dce3e0;
+  --accent: #2f6f63;
+  --term-bg: #f0f4f2;
+  --term-ink: #18302b;
+  --ok-bg: #e7f3ec; --ok: #2a7146;
+  --sub-bg: #e8eef8; --sub: #2f4f86;
+  --prompt-bg: #f5f2fa; --prompt-ink: #2d2540;
+  --key-bg: #fbf0e1; --key: #9a5a12;
+  --sans: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", Consolas, ui-monospace, Menlo, monospace;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15.5px; line-height: 1.65; }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 36px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+h1 { font-size: 28px; margin: 4px 0 0; text-wrap: balance; }
+.lead { color: var(--muted); margin: 8px 0 0; max-width: 66ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.fact { font-size: 13px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; }
+.fact b { font-weight: 600; }
+.step { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 22px 22px 20px; display: grid; gap: 14px; min-width: 0; }
+.step-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.no { font-family: var(--mono); font-weight: 500; color: var(--accent); font-size: 15px; }
+.step h2 { font-size: 19px; margin: 0; font-weight: 600; text-wrap: balance; }
+.badge { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.badge.free { background: var(--ok-bg); color: var(--ok); }
+.badge.key { background: var(--key-bg); color: var(--key); }
+.badge.opt { background: var(--term-bg); color: var(--muted); }
+.sub { font-size: 14px; font-weight: 600; color: var(--muted); margin: 4px 0 -6px; }
+.cmd { position: relative; background: var(--term-bg); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.cmd pre { margin: 0; padding: 12px 84px 12px 14px; font-family: var(--mono); font-size: 14px; color: var(--term-ink); overflow-x: auto; line-height: 1.7; }
+.cmd .c { color: var(--muted); }
+.copy { position: absolute; top: 8px; right: 8px; font: 500 12px var(--sans); background: var(--paper); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--accent); }
+.copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+li { max-width: 70ch; }
+.out { font-family: var(--mono); font-size: 13.5px; background: var(--ok-bg); color: var(--ok); border-radius: 8px; padding: 10px 14px; overflow-x: auto; white-space: pre; }
+.out-lbl { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: -8px; }
+code { font-family: var(--mono); font-size: .92em; background: var(--term-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.note { font-size: 14px; color: var(--muted); }
+.trouble { display: grid; gap: 8px; }
+.trouble div { display: grid; grid-template-columns: minmax(0, 15em) minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14.5px; }
+.trouble div:first-child { border-top: 0; }
+.trouble b { font-weight: 600; }
+@media (max-width: 560px) {
+  h1 { font-size: 23px; }
+  .step { padding: 18px 16px; }
+  .trouble div { grid-template-columns: 1fr; gap: 2px; }
+}
+.badge.sub { background: var(--sub-bg); color: var(--sub); }
+.shell { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; color: var(--muted); margin-bottom: -10px; }
+.cmd.prompt { background: var(--prompt-bg); }
+.cmd.prompt pre { color: var(--prompt-ink); font-family: var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; }
+.foot { font-size: 13px; color: var(--muted); margin: 0; }
+.step > .note { margin: 0; }
+ul ul { margin-top: 4px; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">KOSCOM 과정1 · 1027 / 2-1 · Windows</div>
+    <h1>2-1 자동 평가와 채점 신뢰성 실행 명령</h1>
+    <p class="lead">기준선과 RAG 결과를 RAGAS(faithfulness, context_recall)로 채점해 점수표 v1을 만들고, 사람 채점 10건과 맞춰 봅니다.</p>
+    <div class="facts"><span class="fact">저장소 <b>C:\koscom-agent-lab-2026\lab</b></span><span class="fact">작업 폴더 <b>lab\1027\2-1</b></span><span class="fact">결과 <b>eval\results\scores.csv</b></span></div>
+  </header>
+  <section class="step"><div class="step-head"><span class="no">0</span><h2>준비</h2></div><div class="shell">PowerShell</div><div class="cmd"><pre>cd C:\koscom-agent-lab-2026\lab
+.venv\Scripts\activate
+cd 1027\2-1</pre><button class="copy" type="button">복사</button></div><ul><li>프롬프트 앞에 <code>(.venv)</code>가 붙으면 가상환경이 켜진 것입니다. PowerShell을 새로 열 때마다 다시 켭니다.</li></ul><div class="sub">필요한 결과 파일 (<code>lab\eval\results\</code>)</div><ul><li><code>baseline_r1.jsonl</code>, <code>baseline_r2.jsonl</code> (1-1)</li><li><code>rag_r1.jsonl</code>, <code>rag_r2.jsonl</code> (1-3)</li><li>없으면 강사 결과를 복사합니다(아래 &quot;결과 파일이 없을 때&quot;).</li></ul></section><section class="step"><div class="step-head"><span class="no">+</span><h2>정답 코드로 맞출 때</h2><span class="badge opt">선택</span></div><p class="note">RAGAS 채점 함수와 사람 채점 비교 스크립트를 정답으로 맞출 때 복사합니다. 러너(<code>1027\1-2\src\run_eval.py</code>)의 <code>--score</code>가 <code>ragas_score.py</code>를 불러 씁니다.</p><div class="shell">PowerShell</div><div class="cmd"><pre>mkdir src -Force
+copy C:\koscom-agent-lab-2026\solutions\1027\2-1\src\ragas_score.py src\
+copy C:\koscom-agent-lab-2026\solutions\1027\2-1\src\compare_human.py src\</pre><button class="copy" type="button">복사</button></div><ul><li><code>__init__.py</code>는 만들지 않습니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">1</span><h2>RAG 결과 채점 · 실습 ①</h2><span class="badge key">BizRouter 키 필요</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>python -m src.run_eval --results eval/results/rag_r1.jsonl --score
+python -m src.run_eval --results eval/results/rag_r2.jsonl --score</pre><button class="copy" type="button">복사</button></div><ul><li><code>--score</code>를 붙이면 규칙 채점에 더해 RAGAS 채점을 합니다. 채점 모델(LLM)을 부르므로 키가 필요합니다.</li></ul><div class="out-lbl">기록된 출력 (rag_r1)</div><div class="out">{&quot;name&quot;: &quot;rag_r1&quot;, ... &quot;citation_hit&quot;: 0.87, &quot;faithfulness&quot;: 0.877, &quot;context_recall&quot;: 0.831, ...}</div></section><section class="step"><div class="step-head"><span class="no">2</span><h2>기준선 결과 채점</h2><span class="badge key">BizRouter 키 필요</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>python -m src.run_eval --results eval/results/baseline_r1.jsonl --score --baseline
+python -m src.run_eval --results eval/results/baseline_r2.jsonl --score --baseline</pre><button class="copy" type="button">복사</button></div><ul><li><code>--baseline</code>은 기준선의 문맥을 <code>data\regs_all.md</code> 전체로 놓고 채점하라는 뜻입니다.</li><li>기준선의 context_recall 1.0은 전체를 넣었기 때문이고 성능이 좋다는 뜻이 아닙니다. 기준선은 faithfulness, 비용, 함정 문항으로 비교합니다.</li></ul><div class="out-lbl">기록된 출력 (baseline_r1)</div><div class="out">{&quot;name&quot;: &quot;baseline_r1&quot;, ... &quot;faithfulness&quot;: 0.794, &quot;context_recall&quot;: 1.0, &quot;stale&quot;: 1, &quot;leaked&quot;: 3, ...}</div></section><section class="step"><div class="step-head"><span class="no">3</span><h2>사람 채점과 비교 · 실습 ②</h2><span class="badge free">키 필요 없음</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>python -m src.compare_human</pre><button class="copy" type="button">복사</button></div><ul><li><code>eval\human_labels.csv</code> 10건의 사람 판정과 <code>rag_r1</code>의 RAGAS 점수를 한 표로 보여 줍니다. 1단계를 먼저 해야 합니다.</li><li>사람과 RAGAS가 다르게 판정한 사례 1건을 골라 이유를 적습니다(예: Q16, Q28).</li><li>r1과 r2 점수 차이로 편차를 확인하고, 함정 문항(Q21–Q24) 점수를 확인합니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">+</span><h2>결과 파일이 없을 때</h2><span class="badge opt">선택</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>copy C:\koscom-agent-lab-2026\solutions\1027\1-1\results\baseline_r1.jsonl C:\koscom-agent-lab-2026\lab\eval\results\
+copy C:\koscom-agent-lab-2026\solutions\1027\1-1\results\baseline_r2.jsonl C:\koscom-agent-lab-2026\lab\eval\results\
+copy C:\koscom-agent-lab-2026\solutions\eval\results\rag_r1.jsonl C:\koscom-agent-lab-2026\lab\eval\results\
+copy C:\koscom-agent-lab-2026\solutions\eval\results\rag_r2.jsonl C:\koscom-agent-lab-2026\lab\eval\results\</pre><button class="copy" type="button">복사</button></div></section>
+  <section class="step"><div class="step-head"><h2>막힐 때</h2></div><div class="trouble"><div><b><code>No module named &#x27;src…&#x27;</code></b><span>수업 폴더 안에서 <code>python -m src.…</code> 형식으로 실행했는지 확인합니다. 그래도 나면 <code>lab</code> 폴더에서 <code>python common\scripts\check_env.py</code>를 다시 실행합니다. <code>.venv</code>를 새로 만들었다면 꼭 다시 실행해야 합니다.</span></div><div><b>RAGAS 버전 오류</b><span>위의 &quot;정답 코드로 맞출 때&quot;로 <code>ragas_score.py</code>를 복사합니다.</span></div><div><b>호출 한도 초과</b><span>10건 부분 집합으로 채점하고 점수표에 &quot;부분 집합&quot;이라고 적습니다.</span></div><div><b>키 오류</b><span><code>lab\.env</code>에 <code>BIZROUTER_API_KEY</code>가 들어 있는지 확인합니다. 없으면 <code>lab</code> 폴더에서 <code>copy .env.example .env</code> 후 <code>notepad .env</code>.</span></div><div><b>429 오류</b><span>여러 명이 동시에 호출해 한도에 걸린 것입니다. 코드가 기다렸다 자동으로 다시 시도합니다.</span></div></div></section>
+  <p class="foot">명령의 기준은 이 폴더의 <code>GUIDE.md</code>와 <code>solutions\1027\2-1\results\</code>의 실행 기록(각 <code>.log</code> 첫 줄)입니다.</p>
+</div>
+<script>
+document.querySelectorAll(".copy").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const pre = btn.parentElement.querySelector("pre");
+    const text = pre.innerText.trim();
+    const done = () => { btn.textContent = "복사됨"; setTimeout(() => { btn.textContent = "복사"; }, 1500); };
+    const fallback = () => {
+      const r = document.createRange(); r.selectNodeContents(pre);
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Ctrl+C";
+    };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+  });
+});
+</script>
+</body>
+</html>

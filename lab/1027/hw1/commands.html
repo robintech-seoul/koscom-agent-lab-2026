@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hw1 실행 명령</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 위에서 아래로 단계 순서. 단계마다 명령 블록(복사 버튼) + 설명 + 정상 출력. 밝은 단일 테마 */
+:root {
+  color-scheme: light;
+  --bg: #f6f8f7;
+  --paper: #ffffff;
+  --ink: #1b2422;
+  --muted: #5a6864;
+  --line: #dce3e0;
+  --accent: #2f6f63;
+  --term-bg: #f0f4f2;
+  --term-ink: #18302b;
+  --ok-bg: #e7f3ec; --ok: #2a7146;
+  --sub-bg: #e8eef8; --sub: #2f4f86;
+  --prompt-bg: #f5f2fa; --prompt-ink: #2d2540;
+  --key-bg: #fbf0e1; --key: #9a5a12;
+  --sans: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", Consolas, ui-monospace, Menlo, monospace;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15.5px; line-height: 1.65; }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 36px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+h1 { font-size: 28px; margin: 4px 0 0; text-wrap: balance; }
+.lead { color: var(--muted); margin: 8px 0 0; max-width: 66ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.fact { font-size: 13px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; }
+.fact b { font-weight: 600; }
+.step { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 22px 22px 20px; display: grid; gap: 14px; min-width: 0; }
+.step-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.no { font-family: var(--mono); font-weight: 500; color: var(--accent); font-size: 15px; }
+.step h2 { font-size: 19px; margin: 0; font-weight: 600; text-wrap: balance; }
+.badge { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.badge.free { background: var(--ok-bg); color: var(--ok); }
+.badge.key { background: var(--key-bg); color: var(--key); }
+.badge.opt { background: var(--term-bg); color: var(--muted); }
+.sub { font-size: 14px; font-weight: 600; color: var(--muted); margin: 4px 0 -6px; }
+.cmd { position: relative; background: var(--term-bg); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.cmd pre { margin: 0; padding: 12px 84px 12px 14px; font-family: var(--mono); font-size: 14px; color: var(--term-ink); overflow-x: auto; line-height: 1.7; }
+.cmd .c { color: var(--muted); }
+.copy { position: absolute; top: 8px; right: 8px; font: 500 12px var(--sans); background: var(--paper); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--accent); }
+.copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+li { max-width: 70ch; }
+.out { font-family: var(--mono); font-size: 13.5px; background: var(--ok-bg); color: var(--ok); border-radius: 8px; padding: 10px 14px; overflow-x: auto; white-space: pre; }
+.out-lbl { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: -8px; }
+code { font-family: var(--mono); font-size: .92em; background: var(--term-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.note { font-size: 14px; color: var(--muted); }
+.trouble { display: grid; gap: 8px; }
+.trouble div { display: grid; grid-template-columns: minmax(0, 15em) minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14.5px; }
+.trouble div:first-child { border-top: 0; }
+.trouble b { font-weight: 600; }
+@media (max-width: 560px) {
+  h1 { font-size: 23px; }
+  .step { padding: 18px 16px; }
+  .trouble div { grid-template-columns: 1fr; gap: 2px; }
+}
+.badge.sub { background: var(--sub-bg); color: var(--sub); }
+.shell { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; color: var(--muted); margin-bottom: -10px; }
+.cmd.prompt { background: var(--prompt-bg); }
+.cmd.prompt pre { color: var(--prompt-ink); font-family: var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; }
+.foot { font-size: 13px; color: var(--muted); margin: 0; }
+.step > .note { margin: 0; }
+ul ul { margin-top: 4px; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">KOSCOM 과정1 · 1027 / hw1 · Windows</div>
+    <h1>과제 1 llm-wiki 실행 명령</h1>
+    <p class="lead">규칙 파일(<code>SCHEMA.md</code>)에 따라 규정을 위키로 정리하고, 위키를 읽는 에이전트를 만들어 기준선, RAG, 에이전틱과 함께 4방식 점수표를 만듭니다.</p>
+    <div class="facts"><span class="fact">저장소 <b>C:\koscom-agent-lab-2026\lab</b></span><span class="fact">작업 폴더 <b>lab\1027\hw1</b></span><span class="fact">위키는 루트 <b>lab\wiki\</b></span></div>
+  </header>
+  <section class="step"><div class="step-head"><span class="no">0</span><h2>준비</h2></div><div class="shell">PowerShell</div><div class="cmd"><pre>cd C:\koscom-agent-lab-2026\lab
+.venv\Scripts\activate
+cd 1027\hw1</pre><button class="copy" type="button">복사</button></div><ul><li>프롬프트 앞에 <code>(.venv)</code>가 붙으면 가상환경이 켜진 것입니다. PowerShell을 새로 열 때마다 다시 켭니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">+</span><h2>정답 코드로 맞출 때</h2><span class="badge opt">선택</span></div><p class="note">Claude Code로 직접 만들지 않았거나 막혔을 때 solutions의 코드를 복사합니다.</p><div class="shell">PowerShell</div><div class="cmd"><pre>mkdir src\graphs -Force
+copy C:\koscom-agent-lab-2026\solutions\1027\hw1\src\graphs\graph_wiki.py src\graphs\
+copy C:\koscom-agent-lab-2026\solutions\1027\hw1\src\score_table.py src\</pre><button class="copy" type="button">복사</button></div><ul><li><code>__init__.py</code>는 만들지 않습니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">1</span><h2>규칙 파일과 문서 반영 · 실습 ①</h2><span class="badge sub">Claude 구독 계정</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>claude</pre><button class="copy" type="button">복사</button></div><div class="shell">Claude Code에 입력</div><div class="cmd prompt"><pre>wiki/SCHEMA.md를 만들어줘. Karpathy llm-wiki 패턴을 따르되 다음을 규칙으로:
+- wiki/pages/의 모든 문장 끝에 원문 근거 [doc §article, 시행일] 링크 필수
+- 개정된 조항은 현행만 본문에, 개정 전은 &quot;이력&quot; 절로
+- 보안 등급이 다른 내용은 한 페이지에 섞지 않음
+- index.md(전체 목록), log.md(append-only) 유지</pre><button class="copy" type="button">복사</button></div><ul><li>위키는 모든 수업이 함께 쓰므로 <b>저장소 루트의 <code>wiki\</code></b>에 만듭니다(<code>lab\wiki\SCHEMA.md</code>).</li></ul><div class="shell">Claude Code에 입력</div><div class="cmd prompt"><pre>wiki/SCHEMA.md 규칙에 따라 data/raw/의 (강사가 지정한 문서 3~5개)를 ingest해서 wiki를 갱신해줘.</pre><button class="copy" type="button">복사</button></div><ul><li>문서 3~5개만 직접 반영합니다. 나머지는 미리 만든 위키(<code>data\wiki\</code>)로 채웁니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">2</span><h2>위키 점검 · 실습 ②</h2><span class="badge sub">Claude 구독 계정</span></div><div class="shell">Claude Code에 입력</div><div class="cmd prompt"><pre>wiki를 lint해줘: 근거 링크 없는 문장, 페이지 간 모순, 시행일 지난 내용, 고아 페이지.</pre><button class="copy" type="button">복사</button></div><ul><li>ingest 단계의 오류를 이 점검으로 잡습니다.</li></ul></section><section class="step"><div class="step-head"><span class="no">3</span><h2>위키를 읽는 에이전트 · 실습 ③</h2><span class="badge key">BizRouter 키 필요</span></div><div class="shell">Claude Code에 입력</div><div class="cmd prompt"><pre>src/graphs/graph_wiki.py를 만들어줘.
+- 도구: read_index(), read_page(name), read_source(doc, article)
+- 위키로 탐색하되 최종 citations는 read_source로 확인한 원문 조항만 허용
+- answer_schema 구조화 출력</pre><button class="copy" type="button">복사</button></div><div class="shell">PowerShell</div><div class="cmd"><pre>python -m src.run_eval --graph src.graphs.graph_wiki --name wiki</pre><button class="copy" type="button">복사</button></div><ul><li>정답 그래프는 루트 <code>wiki\index.md</code>가 있으면 그 위키를, 없으면 미리 만든 <code>data\wiki\</code>를 씁니다.</li></ul><div class="out-lbl">정상 출력</div><div class="out">30건 → eval/results/wiki_r1.jsonl (오류 0건)
+{&quot;name&quot;: &quot;wiki_r1&quot;, ... &quot;citation_hit&quot;: 0.988, ... &quot;in_tok&quot;: 26300.9, ...}</div></section><section class="step"><div class="step-head"><span class="no">4</span><h2>4방식 점수표 · 실습 ④</h2><span class="badge free">키 필요 없음</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>python -m src.score_table</pre><button class="copy" type="button">복사</button></div><ul><li><code>eval\results\</code>의 <code>baseline</code>, <code>rag</code>, <code>agentic</code>, <code>wiki</code> 결과를 질문 유형별 인용 적중, 개정 전 판 인용, 토큰, 지연으로 한 표에 모읍니다.</li><li>앞 결과 파일이 없으면 <code>C:\koscom-agent-lab-2026\solutions\eval\results\</code>에서 같은 이름의 파일을 복사합니다.</li></ul><div class="out-lbl">기록된 출력 (일부 열 생략)</div><div class="out">| 방식 | 단일 사실 | 교차 참조 | 종합 | 함정(개정) | 함정(표현) | 개정 전 판 인용 | 질문당 토큰 | 지연 p50 |
+| 통째 넣기      | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1 | 190,193 | 22.6 |
+| 하이브리드 RAG | 1.00 | 0.90 | 0.60 | 0.75 | 1.00 | 6 |   2,726 |  4.7 |
+| 에이전틱 검색  | 1.00 | 1.00 | 0.93 | 1.00 | 1.00 | 0 |  18,903 |  9.7 |
+| llm-wiki       | 1.00 | 1.00 | 0.93 | 1.00 | 1.00 | 0 |  27,870 | 10.8 |</div></section><section class="step"><div class="step-head"><span class="no">+</span><h2>위키 규칙 파일을 정답으로 맞출 때</h2><span class="badge opt">선택</span></div><div class="shell">PowerShell</div><div class="cmd"><pre>mkdir C:\koscom-agent-lab-2026\lab\wiki -Force
+copy C:\koscom-agent-lab-2026\solutions\1027\hw1\wiki\SCHEMA.md C:\koscom-agent-lab-2026\lab\wiki\</pre><button class="copy" type="button">복사</button></div><ul><li>ingest 시간이 부족하면 루트 <code>wiki\</code>를 비워 두고 그래프가 <code>data\wiki\</code>를 쓰게 둡니다.</li></ul></section>
+  <section class="step"><div class="step-head"><h2>막힐 때</h2></div><div class="trouble"><div><b><code>No module named &#x27;src…&#x27;</code></b><span>수업 폴더 안에서 <code>python -m src.…</code> 형식으로 실행했는지 확인합니다. 그래도 나면 <code>lab</code> 폴더에서 <code>python common\scripts\check_env.py</code>를 다시 실행합니다. <code>.venv</code>를 새로 만들었다면 꼭 다시 실행해야 합니다.</span></div><div><b>ingest 시간 초과</b><span>미리 만든 위키(<code>data\wiki\</code>)를 씁니다. 루트에 <code>wiki\index.md</code>가 없으면 그래프가 자동으로 씁니다.</span></div><div><b>점수표에 방식이 빠짐</b><span><code>eval\results\</code>에 그 방식의 결과 파일이 있는지 확인합니다.</span></div><div><b>키 오류</b><span><code>lab\.env</code>에 <code>BIZROUTER_API_KEY</code>가 들어 있는지 확인합니다. 없으면 <code>lab</code> 폴더에서 <code>copy .env.example .env</code> 후 <code>notepad .env</code>.</span></div><div><b>429 오류</b><span>여러 명이 동시에 호출해 한도에 걸린 것입니다. 코드가 기다렸다 자동으로 다시 시도합니다.</span></div></div></section>
+  <p class="foot">명령의 기준은 이 폴더의 <code>GUIDE.md</code>와 <code>solutions\1027\hw1\results\</code>의 실행 기록(각 <code>.log</code> 첫 줄)입니다.</p>
+</div>
+<script>
+document.querySelectorAll(".copy").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const pre = btn.parentElement.querySelector("pre");
+    const text = pre.innerText.trim();
+    const done = () => { btn.textContent = "복사됨"; setTimeout(() => { btn.textContent = "복사"; }, 1500); };
+    const fallback = () => {
+      const r = document.createRange(); r.selectNodeContents(pre);
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Ctrl+C";
+    };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+  });
+});
+</script>
+</body>
+</html>
