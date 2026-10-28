@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3-2 공시 답변 누락 분석</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#ffffff; --ink:#1d1d1f; --sub:#5f6368; --line:#d9d9d6; --soft:#fafaf8; --code:#f4f4f2;
+  --bad:#c0392b; --bad-bg:#fbecec; --bad-b:#d99a9a;
+  --ok:#2e7d4f; --ok-bg:#eaf5ee; --ok-b:#8cc3a0;
+  --warn:#9a6a1a; --warn-bg:#fbf3e3; --warn-b:#dcb878;
+  --info-bg:#eef1f8; --info-b:#97a6c9;
+  --dis:#efeafa; --dis-b:#9583cf; --wri:#fbf1e6; --wri-b:#d0965a; --reg:#eef4ee; --reg-b:#7fae80;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;line-height:1.55;font-size:15px}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+.eyebrow{font-size:13px;color:var(--sub)}
+h1{font-size:25px;margin:4px 0 6px}
+h2{font-size:18px;margin:26px 0 10px}
+.lead{color:var(--sub);margin:0 0 14px}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.88em}
+code{background:var(--code);padding:1px 5px;border-radius:4px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1.5px solid var(--line);margin:16px 0 18px}
+.tab{border:1.5px solid var(--line);border-bottom:none;background:var(--soft);padding:8px 14px;border-radius:10px 10px 0 0;cursor:pointer;font:inherit;font-size:14px;color:var(--sub);margin-bottom:-1.5px}
+.tab.on{background:var(--bg);color:var(--ink);font-weight:600;border-bottom:1.5px solid var(--bg)}
+.panel{display:none}.panel.on{display:block}
+.card{border:1.5px solid var(--line);border-radius:12px;background:#fff;padding:12px 14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.bad{background:var(--bad-bg);border-color:var(--bad-b)}
+.ok{background:var(--ok-bg);border-color:var(--ok-b)}
+.warn{background:var(--warn-bg);border-color:var(--warn-b)}
+.info{background:var(--info-bg);border-color:var(--info-b)}
+.big{font-size:30px;font-weight:700;line-height:1.1}
+.kpi .lbl{font-size:13px;color:var(--sub)}
+pre{background:var(--code);border-radius:8px;padding:10px 12px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:12.5px;margin:8px 0 0;line-height:1.5;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--code);font-weight:600}
+.scroll{overflow-x:auto}
+.note{border-left:3px solid var(--line);padding:4px 12px;color:var(--sub);margin:12px 0}
+.pill{display:inline-block;border-radius:999px;padding:0 9px;font-size:12px;border:1px solid var(--line);background:#fff;margin-right:4px}
+.pill.bad{color:var(--bad);border-color:var(--bad-b);background:var(--bad-bg)}
+.pill.ok{color:var(--ok);border-color:var(--ok-b);background:var(--ok-bg)}
+.pill.warn{color:var(--warn);border-color:var(--warn-b);background:var(--warn-bg)}
+
+/* 타임라인 */
+.tl-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.btn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn:disabled{opacity:.35;cursor:default}
+.tl{position:relative;padding-left:28px}
+.tl::before{content:"";position:absolute;left:10px;top:4px;bottom:4px;width:2px;background:var(--line)}
+.ev{position:relative;margin:0 0 12px;opacity:.18;transition:opacity .35s, transform .35s;transform:translateX(6px)}
+.ev.show{opacity:1;transform:none}
+.ev.cur .card{box-shadow:0 0 0 2.5px var(--ink)}
+.ev .dot{position:absolute;left:-24px;top:14px;width:14px;height:14px;border-radius:50%;background:#fff;border:2.5px solid var(--sub)}
+.ev.k-bad .dot{border-color:var(--bad);background:var(--bad-bg)}
+.ev.k-ok .dot{border-color:var(--ok);background:var(--ok-bg)}
+.ev.k-fix .dot{border-color:var(--ink);background:var(--ink)}
+.ev.k-q .dot{border-color:var(--warn);background:var(--warn-bg)}
+.ev h3{margin:0 0 4px;font-size:15px}
+.ev .tag{font-size:12px;color:var(--sub);font-family:"IBM Plex Mono",monospace}
+.ev .row{display:grid;grid-template-columns:72px 1fr;gap:2px 10px;font-size:14px}
+.ev .row dt{color:var(--sub)}
+.ev .row dd{margin:0}
+
+/* 데이터 흐름 */
+.pipe{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.st{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:150px;max-width:190px;text-align:center;background:#fff;font-size:13.5px;position:relative}
+.st b{display:block;font-size:14px}
+.st small{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--sub)}
+.st.dis{background:var(--dis);border-color:var(--dis-b)}
+.st.wri{background:var(--wri);border-color:var(--wri-b)}
+.conn{display:flex;flex-direction:column;align-items:center;justify-content:center;width:86px;position:relative}
+.conn .ln{height:3px;width:100%;background:var(--ink);position:relative;overflow:hidden;border-radius:2px}
+.conn .ln i{position:absolute;top:-3px;width:9px;height:9px;border-radius:50%;background:var(--ok);animation:flow 1.6s linear infinite}
+.conn.cut .ln{background:repeating-linear-gradient(90deg,var(--bad) 0 6px,transparent 6px 10px)}
+.conn.cut .ln i{background:var(--bad);animation:flowcut 1.6s linear infinite}
+.conn .scissor{font-size:20px;color:var(--bad);line-height:1;margin-top:4px;display:none}
+.conn.cut .scissor{display:block}
+.conn .why{font-size:11.5px;color:var(--bad);text-align:center;line-height:1.3;margin-top:2px;display:none}
+.conn.cut .why{display:block}
+@keyframes flow{0%{left:-10px}100%{left:100%}}
+@keyframes flowcut{0%{left:-10px;opacity:1}45%{left:45%;opacity:1}50%{opacity:0}100%{left:45%;opacity:0}}
+.toggle{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.toggle .btn{font-size:13px;padding:5px 12px}
+.toggle .btn.sel{background:var(--ink);color:#fff}
+.toggle .btn:not(.sel){background:#fff;color:var(--ink)}
+
+/* 토큰 차트 */
+.chart{position:relative;border:1.5px solid var(--line);border-radius:12px;padding:16px 14px 10px;background:#fff}
+.bars{display:flex;align-items:flex-end;gap:10px;height:240px;position:relative;border-bottom:1.5px solid var(--line);padding:0 4px}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:34px}
+.stack{width:100%;max-width:42px;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden}
+.stack .th{background:#c9c3e6}
+.stack .tx{background:#6b5bb5}
+.stack.w .th{background:#ecd3b6}
+.stack.w .tx{background:#c47f3a}
+.stack div{height:0;transition:height 1s ease}
+.bval{font-size:11px;color:var(--sub);margin-bottom:2px;font-family:"IBM Plex Mono",monospace}
+.blbl{font-size:11.5px;color:var(--sub);text-align:center;margin-top:4px;height:30px;line-height:1.2}
+.limit{position:absolute;left:0;right:0;border-top:2px dashed var(--bad);pointer-events:none}
+.limit span{position:absolute;right:4px;top:-18px;font-size:12px;color:var(--bad);background:#fff;padding:0 4px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.fail-mark{color:var(--bad);font-weight:700}
+
+/* diff */
+.diff{font-family:"IBM Plex Mono",monospace;font-size:12.5px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin-top:8px}
+.diff div{padding:2px 10px;white-space:pre-wrap}
+.diff .m{background:#fdecec;color:#8a1f1f}
+.diff .p{background:#e8f6ec;color:#1d5e33}
+.diff .c{background:#fafafa;color:var(--sub)}
+@media (max-width:820px){.grid2,.grid3{grid-template-columns:1fr}.conn{width:100%;height:70px}.conn .ln{width:3px;height:100%}.pipe{flex-direction:column;align-items:center}.conn .ln i{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">KOSCOM 과정1 · 1028 / 3-2 · 문제 분석 기록 · 수정 커밋 <code>69347cb</code> (solutions)</div>
+  <h1>실제 공시를 물었더니 "문서에 없음"이 나온 이유</h1>
+  <p class="lead">3-2 멀티 에이전트에 실제 회사(삼성전자) 공시를 물었을 때 공시 담당은 일을 다 했는데 최종 답이 거부로 나왔습니다. 원인을 실행으로 하나씩 좁혀 찾은 과정과 수정 내용을 정리합니다.</p>
+
+  <div class="tabs">
+    <button class="tab on" data-t="sum">① 한눈에</button>
+    <button class="tab" data-t="tl">② 원인을 찾아간 과정</button>
+    <button class="tab" data-t="flow">③ 데이터가 사라진 곳</button>
+    <button class="tab" data-t="tok">④ 토큰 그래프</button>
+    <button class="tab" data-t="fix">⑤ 수정 내용</button>
+    <button class="tab" data-t="left">⑥ 남은 문제와 교훈</button>
+  </div>
+
+  <!-- ① 한눈에 -->
+  <section class="panel on" id="p-sum">
+    <div class="grid2">
+      <div class="card bad">
+        <b>증상</b>
+        <pre>python -m day2.agents "삼성전자(00126380) 최근 1개월 주요 공시를
+알려줘 공시 문서 내용도 보여줘"</pre>
+        <ul style="margin:8px 0 0;padding-left:18px">
+          <li>공시 담당: 목록 1번 + 원문 16번 조회 <b>모두 성공</b></li>
+          <li>공시 담당 요약에는 16건 표가 잘 만들어짐</li>
+          <li>그런데 최종 답: <code>문서에 없음: 제공된 규정에서 근거를 찾지 못해 답하지 않습니다.</code></li>
+        </ul>
+      </div>
+      <div class="card ok">
+        <b>수정 후</b>
+        <ul style="margin:6px 0 0;padding-left:18px">
+          <li>같은 질문 4번 중 3번: 공시 16건 내용 + 인용 15~16개로 답</li>
+          <li>작성자만 반복 실행 14번: 14번 모두 정상</li>
+          <li>A사(녹화 응답) 기본 질문: 정상</li>
+        </ul>
+        <p class="note" style="margin-bottom:0">남은 1번은 작성자 LLM이 거부를 고른 경우로, 재현되지 않았습니다(⑥ 참고).</p>
+      </div>
+    </div>
+    <h2>원인은 네 가지였습니다</h2>
+    <div class="grid2">
+      <div class="card"><span class="pill bad">원인 1</span><b>도구 결과를 1,500자로 자름</b><br>실제 공시 결과 JSON은 1,543~4,068자. 잘린 JSON은 읽을 수 없어 공시 근거가 전부 버려짐.<br><span class="mono" style="color:var(--sub)">src/agent_loop.py</span></div>
+      <div class="card"><span class="pill bad">원인 2</span><b>공시 담당 출력 한도 4,000토큰</b><br>모델이 생각(thinking)에 4,000토큰을 다 써서 답이 0자. 답에 적힌 접수번호만 근거로 남기므로 근거 0건.<br><span class="mono" style="color:var(--sub)">day2/agents.py · disclosure</span></div>
+      <div class="card"><span class="pill bad">원인 3</span><b>공시 인용 형식</b><br>작성자가 <code>"접수번호 2026…"</code>로 써서 검증자가 "조회되지 않은 접수번호"로 판단하고 모두 제거.<br><span class="mono" style="color:var(--sub)">day2/agents.py · writer / verifier</span></div>
+      <div class="card"><span class="pill bad">원인 4</span><b>작성자 출력 한도 4,000토큰</b><br>16건의 답과 인용을 JSON으로 쓰다 <code>"2026-10</code>에서 잘려 파싱 오류.<br><span class="mono" style="color:var(--sub)">day2/agents.py · writer</span></div>
+    </div>
+    <p class="note">A사·B사 녹화 응답은 결과가 짧아(목록 333자) 이 문제가 드러나지 않았습니다. 실제 데이터를 처음 연결하면서 나타난 문제입니다.</p>
+  </section>
+
+  <!-- ② 타임라인 -->
+  <section class="panel" id="p-tl">
+    <div class="tl-bar">
+      <button class="btn" id="tlplay">▶ 순서대로 보기</button>
+      <button class="btn ghost" id="tlprev">◀ 이전</button>
+      <button class="btn ghost" id="tlnext">다음 ▶</button>
+      <button class="btn ghost" id="tlall">모두 펼치기</button>
+      <span class="mono" style="color:var(--sub);font-size:13px" id="tlno"></span>
+    </div>
+    <div class="tl" id="tl"></div>
+  </section>
+
+  <!-- ③ 데이터 흐름 -->
+  <section class="panel" id="p-flow">
+    <p class="lead">공시 원문이 최종 답까지 가는 길입니다. 버튼을 눌러 단계별로 어디서 끊겼는지 봅니다. 빨간 점선이 데이터가 사라진 곳입니다.</p>
+    <div class="toggle" id="fstate">
+      <button class="btn sel" data-s="0">수정 전</button>
+      <button class="btn" data-s="1">원인 1만 고침</button>
+      <button class="btn" data-s="2">원인 1·2 고침</button>
+      <button class="btn" data-s="3">원인 1·2·3 고침</button>
+      <button class="btn" data-s="4">모두 고침</button>
+    </div>
+    <div class="pipe">
+      <div class="st"><b>DART 도구</b><small>search / document</small><br>목록·원문 JSON</div>
+      <div class="conn" id="c1"><div class="ln"><i></i></div><div class="scissor">✂</div><div class="why">1,500자에서 잘림 → JSON 읽기 실패</div></div>
+      <div class="st dis"><b>공시 담당 답</b><small>disclosure answer</small><br>여기 적힌 번호만 근거로</div>
+      <div class="conn" id="c2"><div class="ln"><i></i></div><div class="scissor">✂</div><div class="why">생각에 4,000토큰 다 씀 → 답 0자</div></div>
+      <div class="st dis"><b>evidence</b><small>state</small><br>작성자의 유일한 근거</div>
+      <div class="conn" id="c3"><div class="ln"><i></i></div><div class="scissor">✂</div><div class="why">답 JSON이 4,000토큰에서 잘림</div></div>
+      <div class="st wri"><b>작성자 인용</b><small>writer citations</small></div>
+      <div class="conn" id="c4"><div class="ln"><i></i></div><div class="scissor">✂</div><div class="why">"접수번호 …" 형식 → 검증 실패</div></div>
+      <div class="st ok"><b>최종 답</b><small>answer</small></div>
+    </div>
+    <div class="card" id="fdesc" style="margin-top:8px"></div>
+  </section>
+
+  <!-- ④ 토큰 그래프 -->
+  <section class="panel" id="p-tok">
+    <p class="lead">출력 토큰에는 모델의 생각(thinking)도 들어갑니다. 빨간 점선이 예전 한도 4,000입니다. 이 선을 넘는 실행은 예전 코드에서 답이 비거나 잘립니다.</p>
+    <div class="grid2">
+      <div class="chart">
+        <b>공시 담당 마지막 응답</b>
+        <div class="bars" id="bars1"><div class="limit" id="lim1"><span>한도 4,000</span></div></div>
+        <div class="legend"><span><i style="background:#c9c3e6"></i>생각</span><span><i style="background:#6b5bb5"></i>답</span><span class="fail-mark">✕ = 답 0자</span></div>
+      </div>
+      <div class="chart">
+        <b>작성자 응답 (같은 근거 16건으로 8번)</b>
+        <div class="bars" id="bars2"><div class="limit" id="lim2"><span>한도 4,000</span></div></div>
+        <div class="legend"><span><i style="background:#c47f3a"></i>전체 출력(생각+답+인용)</span></div>
+      </div>
+    </div>
+    <p class="note">공시 담당 막대의 앞 3개는 수정 전(한도 4,000), 나머지는 수정 후(한도 16,000) 실행입니다. 수정 후 7번 중 6번이 4,000을 넘었습니다. 작성자는 8번 중 5번이 4,000을 넘었습니다.</p>
+  </section>
+
+  <!-- ⑤ 수정 내용 -->
+  <section class="panel" id="p-fix">
+    <p class="lead">solutions 쪽 5개 파일을 고쳤습니다(커밋 <code>69347cb</code>). <code>agents.py</code>는 3-2, 3-3, hw2 사본을 똑같이 고쳤습니다.</p>
+    <div class="grid2">
+      <div class="card">
+        <b>원인 1 · <span class="mono">1028/3-1/src/agent_loop.py</span></b>
+        <div class="diff">
+          <div class="m">-  "result": content[:1500]})</div>
+          <div class="p">+  "result": content})   # 근거 추출용. 결과 파일에는 저장하지 않음</div>
+          <div class="c">   def build_tool_agent(..., name="agent"<span style="color:#1d5e33">, max_tokens=4000</span>):</div>
+          <div class="p">+      llm = get_llm(max_tokens=max_tokens).bind_tools(tools)</div>
+        </div>
+      </div>
+      <div class="card">
+        <b>원인 2 · <span class="mono">day2/agents.py</span> disclosure</b>
+        <div class="diff">
+          <div class="m">-  max_iters=5, name="disclosure")</div>
+          <div class="p">+  max_iters=5, name="disclosure", max_tokens=16000)</div>
+          <div class="m">-  if item["rcept_no"] in ans ...</div>
+          <div class="p">+  if (item["rcept_no"] in ans or item["rcept_no"] in read) ...</div>
+          <div class="c">   # read = 원문까지 조회한 공시. 답이 비어도 근거는 남는다</div>
+        </div>
+      </div>
+      <div class="card">
+        <b>원인 3 · <span class="mono">day2/agents.py</span> writer</b>
+        <div class="diff">
+          <div class="p">+  for c in cites:   # 공시 인용은 접수번호 14자리만</div>
+          <div class="p">+      m = re.search(r"\d{14}", c["article"]) if DART else None</div>
+          <div class="p">+      if m: c["article"] = m.group(0)</div>
+        </div>
+      </div>
+      <div class="card">
+        <b>원인 4 · <span class="mono">day2/agents.py</span> writer</b>
+        <div class="diff">
+          <div class="m">-  llm = get_llm().with_structured_output(Answer, ...)</div>
+          <div class="p">+  llm = get_llm(max_tokens=16000).with_structured_output(Answer, ...)</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <b>같이 고친 것 · <span class="mono">1028/3-1/day2/compare_cli_mcp.py</span></b>
+      <div class="diff">
+        <div class="m">-  subprocess.run([...], cwd=ROOT, ...)</div>
+        <div class="p">+  subprocess.run([...], cwd=Path(__file__).resolve().parents[1], ...)</div>
+      </div>
+      <p class="note" style="margin-bottom:0">3-1 CLI 방식이 저장소 루트에서 <code>day2/dart_cli.py</code>를 찾다 실패하던 문제입니다(폴더 구조를 수업별로 바꾼 뒤 생김). LLM 없이 도구만 불러 확인했습니다.</p>
+    </div>
+    <h2>영향 범위</h2>
+    <div class="scroll"><table>
+      <tr><th>대상</th><th>영향</th></tr>
+      <tr><td>A사·B사 녹화 응답 실습</td><td>결과가 짧아 원인 1~4가 나타나지 않던 경로. 수정 후 기본 질문 1건 정상 확인</td></tr>
+      <tr><td>기록된 강사 결과(<code>solutions/…/results/</code>)</td><td>예전 코드로 만든 기록. 다시 돌리지 않았음. 출력 한도가 바뀌어 다시 돌리면 점수가 조금 다를 수 있음</td></tr>
+      <tr><td>비용</td><td>한도는 상한일 뿐이라 짧은 답은 그대로. 긴 답만 실제 쓴 만큼 늘어남</td></tr>
+    </table></div>
+  </section>
+
+  <!-- ⑥ 남은 문제 -->
+  <section class="panel" id="p-left">
+    <div class="grid2">
+      <div class="card warn">
+        <b>재현되지 않은 1건</b>
+        <p style="margin:6px 0">수정 후 전체 실행 4번 중 1번은 근거 16건이 들어갔는데 작성자가 인용 0개로 거부했습니다. 오류나 잘림은 없었습니다.</p>
+        <ul style="margin:0;padding-left:18px">
+          <li>같은 조건으로 작성자만 14번 실행 → 14번 모두 정상</li>
+          <li>작성자 지시문: "규정이 우선", "근거로 답할 수 없으면 sufficient=false"</li>
+          <li>조사 요약 첫 줄이 규정 담당의 "문서에 없음"</li>
+        </ul>
+        <p style="margin:6px 0 0">→ 공시만 묻는 질문에서 LLM이 가끔 "규정 근거가 없으니 거부"를 고르는 것으로 봅니다. 지시문 보완으로 줄일 수 있지만 평가 질문의 거부 판단에도 영향을 줄 수 있어 그대로 두었습니다.</p>
+      </div>
+      <div class="card info">
+        <b>이번에 배운 것</b>
+        <ul style="margin:6px 0 0;padding-left:18px">
+          <li><b>작은 녹화 데이터는 버그를 숨깁니다.</b> 실제 데이터를 연결하면 길이, 개수, 형식이 달라집니다.</li>
+          <li><b>출력 한도에는 생각 토큰도 들어갑니다.</b> 입력이 길수록 생각이 길어져 답을 쓸 자리가 없어집니다. 종료 사유(<code>stop_reason: max_tokens</code>)를 확인합니다.</li>
+          <li><b>조용히 건너뛰는 코드가 원인을 가립니다.</b> <code>except JSONDecodeError: continue</code> 때문에 오류 없이 근거만 사라졌습니다.</li>
+          <li><b>가끔 생기는 문제는 여러 번 돌려야 보입니다.</b> 한 번 성공으로 고쳐졌다고 판단하지 않고, 4번·8번씩 돌려 비율로 봤습니다.</li>
+          <li><b>중간 상태를 찍어 봅니다.</b> 노드별 입력과 출력(evidence 개수, 답 길이, 종료 사유)을 기록하면 어디서 끊겼는지 바로 보입니다.</li>
+        </ul>
+      </div>
+    </div>
+    <h2>분석에 쓴 방법</h2>
+    <div class="scroll"><table>
+      <tr><th>방법</th><th>무엇을 봤나</th></tr>
+      <tr><td>전체 그래프 실행 + state 출력</td><td>작업 분배, 도구 호출, 요약, evidence 개수, 검증 결과, 최종 답</td></tr>
+      <tr><td>LLM 없이 데이터만 측정</td><td>도구 결과 JSON 길이, 1,500자로 자르면 읽히는지</td></tr>
+      <tr><td>노드 하나만 실행</td><td>공시 담당(<code>disclosure</code>)만 따로 돌려 evidence가 만들어지는지</td></tr>
+      <tr><td>감시 코드(spy) 끼우기</td><td>공시 담당의 반복 횟수, 마지막 응답의 블록 종류, 종료 사유, 생각 토큰 수</td></tr>
+      <tr><td>입력 고정 후 반복</td><td>작성자 입력을 저장해 작성자만 6번·8번 실행, 거부 비율과 출력 토큰</td></tr>
+    </table></div>
+    <p class="note">분석과 확인에 든 BizRouter 비용은 약 0.2달러입니다. DART 조회는 강사 키로 했고 무료입니다.</p>
+  </section>
+</div>
+
+<script>
+// 탭
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(t => t.addEventListener("click", () => {
+  tabs.forEach(x => x.classList.toggle("on", x === t));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === "p-" + t.dataset.t));
+  if (t.dataset.t === "tok") drawCharts();
+}));
+
+// ② 타임라인
+const EV = [
+  {k:"bad", tag:"실행 1 · 전체 그래프", t:"증상 재현: 도구는 다 성공, 근거는 0건",
+   r:[["한 일","같은 질문을 강사 키로 실행하고 state를 모두 출력"],["본 것","공시 도구 17번 성공, 요약에 16건 표 있음, <b>evidence 0건</b>, 작성자가 바로 거부"],["판단","공시 담당 → evidence 사이에서 데이터가 사라짐"]]},
+  {k:"q", tag:"가설 A", t:"도구 결과를 1,500자로 자르는 것이 원인?",
+   r:[["한 일","LLM 없이 DART 결과 JSON 길이를 재고, 1,500자로 잘라 읽어 봄"],["본 것","삼성전자 목록 2,196자·원문 1,542자 → <b>읽기 실패</b> / A사 목록 333자 → 성공"],["판단","원인 1 확인. 녹화 데이터는 짧아서 드러나지 않았음"]]},
+  {k:"fix", tag:"수정 #1", t:"agent_loop.py: 결과를 자르지 않음", r:[["결과","LLM 없이 MCP 결과가 JSON으로 읽히는 것 확인(목록 16건)"]]},
+  {k:"bad", tag:"실행 2 · 전체 그래프", t:"고쳤는데도 evidence 0건",
+   r:[["본 것","도구 17번 성공, 여전히 근거 0건"],["판단","원인이 하나 더 있음. 이 실행에서는 요약을 출력하지 않아 바로 알 수 없었음"]]},
+  {k:"ok", tag:"실행 3 · 노드 하나만", t:"공시 담당만 돌리면 evidence 16건",
+   r:[["본 것","disclosure 노드 단독 실행 → 근거 16건 정상"],["판단","항상 실패하는 것이 아니라 <b>가끔</b> 실패함"]]},
+  {k:"ok", tag:"실행 4 · 전체 그래프 + 작성자 감시", t:"이번엔 성공",
+   r:[["본 것","작성자 입력 evidence 16건, 인용 16개로 답함"],["판단","같은 질문이 성공과 실패를 오감 → 여러 번 돌려 실패 순간을 잡아야 함"]]},
+  {k:"bad", tag:"실행 5~8 · 진단 실행 4번", t:"4번 중 2번 실패, 실패 때 공시 담당 답이 0자",
+   r:[["한 일","공시 담당 내부(반복 수, 답 길이, 접수번호 매칭 수)를 기록하는 감시 코드를 끼워 4번 실행"],["본 것","실패한 2번: 도구 17번 성공, 마지막 응답에 도구 호출 없음, <b>답 0자</b> → 매칭 0 → 근거 0"],["판단","모델이 빈 답을 낸 이유를 봐야 함"]]},
+  {k:"bad", tag:"실행 9~11 · 원본 응답 확인", t:"생각만 하다 한도에 걸림",
+   r:[["본 것","실패 응답의 내용 블록은 <code>thinking</code> 하나뿐, 종료 사유 <code>max_tokens</code>, 출력 4,000토큰 중 <b>생각 4,000</b>"],["판단","원인 2 확인. 성공한 실행도 3,997토큰으로 한도 바로 아래였음"]]},
+  {k:"fix", tag:"수정 #2", t:"공시 담당 한도 16,000 + 원문 조회한 공시는 근거로 남김", r:[["이유","한도만 올리면 다른 이유로 답이 비어도 같은 일이 생김. 답과 상관없이 근거가 남게 함"]]},
+  {k:"bad", tag:"실행 12~14 · 확인 3번", t:"2번 성공, 1번은 새 원인: 인용 형식",
+   r:[["본 것","검증자 지적 <code>disclosure: 조회되지 않은 접수번호 접수번호 20261026000017</code> → 작성자가 번호 앞에 글자를 붙임 → 되돌린 뒤에도 같아 인용 모두 제거"],["판단","원인 3"]]},
+  {k:"fix", tag:"수정 #3", t:"작성자 공시 인용에서 14자리 번호만 남김", r:[["확인","정규식으로 세 가지 형식에서 번호만 뽑히는 것 확인"]]},
+  {k:"bad", tag:"실행 15 · 확인", t:"작성자 JSON이 중간에 잘림",
+   r:[["본 것","<code>ValidationError: sufficient Field required</code>, 잘린 지점 <code>\"effective_date\": \"2026-10</code>"],["판단","원인 4: 작성자도 같은 4,000토큰 한도"]]},
+  {k:"fix", tag:"수정 #4", t:"작성자 한도 16,000", r:[]},
+  {k:"ok", tag:"실행 16~19 · 확인 4번", t:"4번 중 3번 정상, 공시 담당 출력 5,231~7,899토큰",
+   r:[["본 것","3번: 근거 16, 인용 15~16. 1번: 근거 16인데 작성자가 인용 0으로 거부(오류 없음)"]]},
+  {k:"q", tag:"실행 20~ · 작성자만 반복", t:"거부가 재현되지 않음 (14번 중 0번)",
+   r:[["한 일","작성자 입력을 저장하고 작성자만 6번, 근거 16건으로 8번 실행"],["본 것","14번 모두 정상. 출력 2,248~5,188토큰(예전 한도였다면 8번 중 5번 잘림)"],["판단","남은 1건은 LLM 판단의 흔들림으로 봄 → ⑥"]]},
+];
+const tl = document.getElementById("tl");
+EV.forEach((e, i) => {
+  const d = document.createElement("div");
+  d.className = "ev k-" + e.k;
+  const cls = e.k === "bad" ? "bad" : e.k === "ok" ? "ok" : e.k === "q" ? "warn" : "";
+  d.innerHTML = `<span class="dot"></span><div class="card ${e.k === "fix" ? "info" : ""}"><div class="tag">${i + 1}. ${e.tag} ${cls ? `<span class="pill ${cls}">${{bad:"실패",ok:"성공",warn:"가설·확인"}[cls]}</span>` : `<span class="pill">수정</span>`}</div><h3>${e.t}</h3>${e.r.length ? `<dl class="row">${e.r.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join("")}</dl>` : ""}</div>`;
+  tl.appendChild(d);
+});
+let ti = -1, tt = null;
+function tlShow(n){
+  const evs = tl.querySelectorAll(".ev");
+  ti = Math.max(-1, Math.min(n, evs.length - 1));
+  evs.forEach((e, i) => { e.classList.toggle("show", i <= ti); e.classList.toggle("cur", i === ti); });
+  document.getElementById("tlno").textContent = ti < 0 ? "" : `${ti + 1} / ${evs.length}`;
+  if (ti >= 0) evs[ti].scrollIntoView({block: "nearest", behavior: "smooth"});
+}
+function tlStop(){ clearInterval(tt); tt = null; document.getElementById("tlplay").textContent = "▶ 순서대로 보기"; }
+document.getElementById("tlplay").onclick = () => {
+  if (tt) return tlStop();
+  if (ti >= EV.length - 1) tlShow(-1);
+  document.getElementById("tlplay").textContent = "❚❚ 멈춤";
+  tt = setInterval(() => { if (ti >= EV.length - 1) return tlStop(); tlShow(ti + 1); }, 1800);
+};
+document.getElementById("tlnext").onclick = () => { tlStop(); tlShow(ti + 1); };
+document.getElementById("tlprev").onclick = () => { tlStop(); tlShow(ti - 1); };
+document.getElementById("tlall").onclick = () => { tlStop(); tlShow(EV.length - 1); };
+tlShow(EV.length - 1);
+
+// ③ 데이터 흐름
+const FS = [
+  {cut:[1,2,3,4], d:"<b>수정 전.</b> 도구 결과가 1,500자에서 잘려 JSON을 못 읽습니다. 근거가 하나도 만들어지지 않고, 작성자는 근거가 없으니 LLM을 부르지도 않고 거부합니다. 뒤쪽 끊김도 모두 숨어 있습니다."},
+  {cut:[2,3,4], d:"<b>원인 1만 고침.</b> JSON은 읽히지만, 공시 담당이 생각에 4,000토큰을 다 쓰면 답이 0자라 접수번호가 하나도 매칭되지 않습니다. 실행할 때마다 되기도 하고 안 되기도 합니다."},
+  {cut:[3,4], d:"<b>원인 1·2 고침.</b> 근거 16건이 작성자까지 갑니다. 그런데 작성자의 답 JSON이 4,000토큰에서 잘리면 파싱 오류가 나고, 형식이 맞아도 접수번호 앞에 글자가 붙으면 검증에서 빠집니다."},
+  {cut:[3], d:"<b>원인 1·2·3 고침.</b> 인용 번호는 정리되지만, 근거가 많으면 작성자 출력이 4,000토큰을 넘어 JSON이 잘립니다."},
+  {cut:[], d:"<b>모두 고침.</b> 근거 16건이 작성자까지 가고, 작성자는 16,000토큰 한도 안에서 답과 인용을 씁니다. 확인 실행 4번 중 3번, 작성자만 14번 중 14번 정상."},
+];
+function fShow(s){
+  document.querySelectorAll("#fstate .btn").forEach(b => b.classList.toggle("sel", +b.dataset.s === s));
+  [1,2,3,4].forEach(i => document.getElementById("c" + i).classList.toggle("cut", FS[s].cut.includes(i)));
+  // 첫 끊김 뒤로는 데이터가 흐르지 않음
+  const first = Math.min(...FS[s].cut, 99);
+  [1,2,3,4].forEach(i => document.getElementById("c" + i).querySelector("i").style.visibility = i > first ? "hidden" : "visible");
+  document.getElementById("fdesc").innerHTML = FS[s].d;
+}
+document.querySelectorAll("#fstate .btn").forEach(b => b.onclick = () => fShow(+b.dataset.s));
+fShow(0);
+
+// ④ 토큰 그래프
+const D1 = [
+  {l:"수정 전 A", th:4000, tx:0, f:true}, {l:"수정 전 B", th:4000, tx:0, f:true}, {l:"수정 전 C", th:1717, tx:2280},
+  {l:"후 1", th:1705, tx:2954}, {l:"후 2", th:1338, tx:2583}, {l:"후 3", th:2398, tx:2516},
+  {l:"후 4", th:null, tx:7899}, {l:"후 5", th:null, tx:5231}, {l:"후 6", th:null, tx:7759}, {l:"후 7", th:null, tx:5614},
+];
+const D2 = [2248, 2348, 2458, 3468, 4568, 4718, 5022, 5188];
+const MAX = 8500;
+function bar(host, items){
+  host.querySelectorAll(".bcol").forEach(n => n.remove());
+  items.forEach(it => {
+    const c = document.createElement("div"); c.className = "bcol";
+    const tot = (it.th || 0) + it.tx;
+    c.innerHTML = `<div class="bval">${it.f ? '<span class="fail-mark">✕</span> ' : ""}${tot.toLocaleString()}</div>
+      <div class="stack ${it.w ? "w" : ""}"><div class="th" data-h="${(it.th || 0) / MAX * 100}"></div><div class="tx" data-h="${it.tx / MAX * 100}"></div></div>
+      <div class="blbl">${it.l}</div>`;
+    host.appendChild(c);
+  });
+}
+function drawCharts(){
+  bar(document.getElementById("bars1"), D1);
+  bar(document.getElementById("bars2"), D2.map((v, i) => ({l: "작성자 " + (i + 1), th: 0, tx: v, w: true})));
+  ["lim1", "lim2"].forEach(id => document.getElementById(id).style.bottom = (34 + 4000 / MAX * 100 * 2.4) + "px");
+  requestAnimationFrame(() => setTimeout(() => {
+    document.querySelectorAll(".stack div").forEach(d => d.style.height = (d.dataset.h * 2.4) + "px");
+  }, 50));
+}
+</script>
+</body>
+</html>

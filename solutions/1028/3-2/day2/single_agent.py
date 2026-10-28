@@ -43,10 +43,10 @@ class _Single:
         CURRENT_ROLE.set(inp.get("role") or "general")
         if self._agent is None:
             self._agent = build_tool_agent([hybrid_search, read_source, grep, read_file, *await _dart_tools()],
-                                           SYSTEM, max_iters=10, name="single")
+                                           SYSTEM, max_iters=10, name="single", max_tokens=16000)   # 생각 토큰도 한도에 들어간다
         out = await self._agent.ainvoke({"question": inp["question"]}, {"recursion_limit": 40})
         msgs = out["messages"][:-1] if getattr(out["messages"][-1], "tool_calls", None) else out["messages"]
-        ans: Answer = await get_llm().with_structured_output(Answer, method="json_schema").ainvoke(
+        ans: Answer = await get_llm(max_tokens=16000).with_structured_output(Answer, method="json_schema").ainvoke(
             msgs + [HumanMessage(FINAL)])
         ctx = [m.content for m in out["messages"] if isinstance(m, ToolMessage)]
         log = [{k: v for k, v in t.items() if k != "result"} for t in out.get("tool_log", [])]
