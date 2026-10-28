@@ -32,7 +32,7 @@ def run_shell(command: str) -> str:
     args = shlex.split(command)
     if len(args) < 2 or not args[0].startswith("python") or args[1] != "day2/dart_cli.py":
         return "Error: 허용되지 않은 명령. python day2/dart_cli.py ... 만 실행할 수 있다."
-    r = subprocess.run([sys.executable, *args[1:]], cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
+    r = subprocess.run([sys.executable, *args[1:]], cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True, encoding="utf-8",
                        env={**os.environ, "PYTHONIOENCODING": "utf-8"}, timeout=60)
     return (r.stdout or r.stderr)[:4000]
 

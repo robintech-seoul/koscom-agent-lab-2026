@@ -26,8 +26,8 @@ class LoopState(TypedDict, total=False):
     answer: str
 
 
-def build_tool_agent(tools: list, system: str, max_iters: int = 6, name: str = "agent"):
-    llm = get_llm().bind_tools(tools)
+def build_tool_agent(tools: list, system: str, max_iters: int = 6, name: str = "agent", max_tokens: int = 4000):
+    llm = get_llm(max_tokens=max_tokens).bind_tools(tools)   # 출력 한도에는 모델의 생각(thinking) 토큰도 들어간다
     node = ToolNode(tools, handle_tool_errors=True)
 
     async def agent(state: LoopState) -> dict:
@@ -55,7 +55,7 @@ def build_tool_agent(tools: list, system: str, max_iters: int = 6, name: str = "
             log.append({"agent": name, "tool": tc["name"], "args": tc["args"], "result_len": len(content),
                         "error": getattr(m, "status", "") == "error" or '"error"' in content[:200]
                         or content.startswith(("Error", "usage:")), "seconds": dt,
-                        "result": content[:1500]})
+                        "result": content})   # 근거 추출용. 자르면 JSON을 못 읽는다(결과 파일에는 저장하지 않음)
         return {"messages": msgs, "tool_log": log}
 
     def route(state: LoopState) -> str:
