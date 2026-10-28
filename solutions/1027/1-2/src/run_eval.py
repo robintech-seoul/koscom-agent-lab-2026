@@ -176,7 +176,7 @@ def main():
     ap.add_argument("--run", type=int, default=1)
     ap.add_argument("--set", default=str(QUESTIONS), help="질문 파일 (기본: eval/questions.jsonl)")
     ap.add_argument("--limit", type=int, default=None)
-    ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--workers", type=int, default=1)   # 2일차 멀티 에이전트는 질문 안에서 다시 병렬이라 동시 실행하면 멈추거나 429
     ap.add_argument("--score", action="store_true", help="RAGAS 채점까지 (2-1)")
     ap.add_argument("--baseline", action="store_true", help="기준선 결과: 문맥 = data/regs_all.md 전체")
     a = ap.parse_args()
