@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3-3 병렬 조사 보기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#ffffff; --ink:#1d1d1f; --sub:#5f6368; --line:#d9d9d6; --soft:#fafaf8; --code:#f4f4f2;
+  --sup:#eef1f8; --sup-b:#7f92c2;
+  --reg:#eef4ee; --reg-b:#7fae80;
+  --dis:#efeafa; --dis-b:#9583cf;
+  --wri:#fbf1e6; --wri-b:#d0965a;
+  --ver:#fbecec; --ver-b:#cc7b7b;
+  --off:#f5f5f3; --off-b:#c4c4bf;
+  --st:#e9f3f6; --st-b:#6fa8b8;
+  --bad:#c0392b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;line-height:1.55;font-size:15px}
+.wrap{max-width:1120px;margin:0 auto;padding:24px 16px 60px}
+.eyebrow{font-size:13px;color:var(--sub)}
+h1{font-size:25px;margin:4px 0 6px}
+h2{font-size:17px;margin:22px 0 8px}
+.lead{color:var(--sub);margin:0 0 16px}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.88em}
+code{background:var(--code);padding:1px 5px;border-radius:4px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1.5px solid var(--line);margin-bottom:18px}
+.tab{border:1.5px solid var(--line);border-bottom:none;background:var(--soft);padding:8px 14px;border-radius:10px 10px 0 0;cursor:pointer;font:inherit;font-size:14px;color:var(--sub);margin-bottom:-1.5px}
+.tab.on{background:var(--bg);color:var(--ink);font-weight:600;border-bottom:1.5px solid var(--bg)}
+.panel{display:none}.panel.on{display:block}
+.btn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn:disabled{opacity:.35;cursor:default}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.stepno{font-size:13px;color:var(--sub);margin-left:auto}
+.card{border:1.5px solid var(--line);border-radius:12px;background:#fff;padding:12px 14px}
+.card h3{margin:0 0 6px;font-size:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.note{border-left:3px solid var(--line);padding:4px 12px;color:var(--sub);margin:12px 0}
+.tool{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--code);border-radius:6px;padding:2px 7px;margin:2px 4px 2px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--code);font-weight:600}
+.scroll{overflow-x:auto}
+
+/* 흐름 */
+.stage{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+.board{position:relative;border:1.5px solid var(--line);border-radius:14px;background:var(--soft);padding:18px 12px;min-height:500px}
+.rowx{display:flex;justify-content:center;gap:16px;margin:0 0 34px}
+.nd{position:relative;border:1.5px solid var(--line);border-radius:10px;background:#fff;padding:7px 10px;min-width:108px;text-align:center;font-size:13px;transition:transform .25s, box-shadow .25s, opacity .25s;z-index:1}
+.nd b{display:block;font-size:13.5px}
+.nd small{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--sub)}
+.nd.pill{border-radius:999px;min-width:70px;font-family:"IBM Plex Mono",monospace}
+.nd.sup{background:var(--sup);border-color:var(--sup-b)}
+.nd.reg{background:var(--reg);border-color:var(--reg-b)}
+.nd.dis{background:var(--dis);border-color:var(--dis-b)}
+.nd.wri{background:var(--wri);border-color:var(--wri-b)}
+.nd.ver{background:var(--ver);border-color:var(--ver-b)}
+.nd.off{background:var(--off);border-color:var(--off-b);border-style:dashed;color:var(--sub)}
+.nd.active{transform:scale(1.08);box-shadow:0 0 0 3px var(--ink);z-index:2}
+.nd.done{opacity:.55}
+.nd .badge{position:absolute;top:-9px;right:-8px;background:var(--ink);color:#fff;border-radius:999px;font-size:11px;padding:0 6px;display:none}
+.nd.active .badge{display:block}
+.nd .wait{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11.5px;color:var(--sub);white-space:nowrap;display:none}
+.nd.waiting .wait{display:block}
+.grp{border:1.5px dashed var(--line);border-radius:12px;padding:18px 12px 10px;position:relative;display:flex;gap:16px;justify-content:center;margin:0 auto 34px;width:fit-content}
+.grp-t{position:absolute;top:-10px;left:12px;background:var(--soft);padding:0 6px;font-size:12px;color:var(--sub)}
+.grp .par{position:absolute;top:-10px;right:12px;background:var(--ink);color:#fff;border-radius:999px;padding:0 8px;font-size:11.5px}
+svg.edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+svg.edges path{fill:none;stroke:#b9b9b4;stroke-width:1.5}
+svg.edges path.hot{stroke:var(--ink);stroke-width:2.5}
+svg.edges path.back{stroke-dasharray:5 4}
+.token{position:absolute;width:16px;height:16px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 4px rgba(29,29,31,.15);z-index:3;transition:left .7s ease, top .7s ease, opacity .3s;opacity:0;pointer-events:none}
+.token.t2{background:#6b5bb5;box-shadow:0 0 0 4px rgba(107,91,181,.2)}
+.side{display:flex;flex-direction:column;gap:12px}
+.msg h3 .who{font-size:12px;color:var(--sub);font-weight:400;margin-left:6px}
+.msg p{margin:4px 0}.msg ul{margin:4px 0;padding-left:18px}
+pre.state{margin:0;background:var(--code);border-radius:8px;padding:10px;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+pre.state .new{background:#fff2b8}
+.ex{font-size:12.5px;color:var(--sub);margin-top:8px}
+
+/* 시간표 */
+.gantt{border:1.5px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+.g-row{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:10px;margin:8px 0}
+.g-lbl{font-size:13.5px;font-weight:600}
+.g-track{position:relative;height:30px;background:var(--soft);border-radius:8px;overflow:hidden}
+.g-seg{position:absolute;top:3px;height:24px;border-radius:6px;font-size:11.5px;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;border:1.5px solid;width:0;transition:width .6s ease}
+.g-sub{top:3px}
+.g-lane2{top:3px}
+.g-axis{display:grid;grid-template-columns:120px 1fr;gap:10px;font-size:11.5px;color:var(--sub)}
+.g-axis div:last-child{display:flex;justify-content:space-between}
+.g-track.two{height:56px}
+.g-total{font-size:13px;color:var(--sub);margin-left:130px}
+
+/* evidence */
+.evbox{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:12px;align-items:start}
+.src{border:1.5px solid var(--line);border-radius:12px;padding:10px;min-height:220px}
+.src h4{margin:0 0 8px;font-size:14px}
+.chip{border:1.5px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12.5px;margin:6px 0;background:#fff;transition:opacity .4s, transform .4s}
+.chip.r{border-color:var(--reg-b);background:var(--reg)}
+.chip.d{border-color:var(--dis-b);background:var(--dis)}
+.chip.hide{opacity:0;transform:translateY(-6px)}
+.chip.dup{outline:2px dashed var(--bad);outline-offset:2px}
+.chip.gone{opacity:.25;text-decoration:line-through}
+.shared{border:2px solid var(--st-b);background:var(--st);border-radius:12px;padding:10px;min-height:220px}
+.shared h4{margin:0 0 8px;font-size:14px}
+.k{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--sub)}
+
+/* 비교 */
+.bar-row{display:grid;grid-template-columns:110px 1fr 80px;align-items:center;gap:8px;margin:6px 0;font-size:13.5px}
+.bbar{height:16px;border-radius:999px;background:#ececea;overflow:hidden}
+.bbar i{display:block;height:100%;width:0;border-radius:999px;transition:width 1s ease}
+.bbar i.s{background:#9aa0a6}.bbar i.m{background:var(--ink)}
+.metric{margin-bottom:14px}.metric h4{margin:0 0 2px;font-size:14px}
+.diff{font-family:"IBM Plex Mono",monospace;font-size:12.5px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin-top:8px}
+.diff div{padding:3px 10px;white-space:pre-wrap}
+.diff .m{background:#fdecec;color:#8a1f1f}.diff .p{background:#e8f6ec;color:#1d5e33}.diff .c{background:#fafafa;color:var(--sub)}
+pre.cmd{background:#1d1d1f;color:#f4f4f2;border-radius:8px;padding:10px 12px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;white-space:pre-wrap;margin:6px 0}
+@media (max-width:860px){.stage,.grid2,.evbox{grid-template-columns:1fr}.g-row,.g-axis{grid-template-columns:80px 1fr}.g-total{margin-left:90px}}
+@media (max-width:560px){.rowx{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">KOSCOM 과정1 · 1028 / 3-3 · <code>day2/agents.py</code></div>
+  <h1>3-3 내부·외부 지식 결합: 병렬 조사와 근거 공유</h1>
+  <p class="lead">3-2의 멀티 에이전트를 복사해 두 가지를 바꿉니다. 규정 담당과 공시 담당을 <b>동시에</b> 실행하고(<code>PARALLEL</code>), 작성자에게 넘기기 전에 <b>같은 근거를 한 번만</b> 남깁니다(<code>DEDUPE</code>). 최종 답은 여전히 작성자 하나만 씁니다.</p>
+
+  <div class="tabs">
+    <button class="tab on" data-t="flow">① 흐름 재생</button>
+    <button class="tab" data-t="time">② 순차 vs 병렬 시간</button>
+    <button class="tab" data-t="ev">③ 근거 공유와 중복 제거</button>
+    <button class="tab" data-t="diff">④ 3-2와 다른 점</button>
+    <button class="tab" data-t="cmp">⑤ 비교 결과</button>
+    <button class="tab" data-t="run">⑥ 실행과 결합 규칙</button>
+  </div>
+
+  <!-- ① 흐름 -->
+  <section class="panel on" id="p-flow">
+    <div class="bar">
+      <button class="btn" id="play">▶ 재생</button>
+      <button class="btn ghost" id="prev">◀ 이전</button>
+      <button class="btn ghost" id="next">다음 ▶</button>
+      <button class="btn ghost" id="reset">처음으로</button>
+      <span class="stepno" id="stepno"></span>
+    </div>
+    <div class="stage">
+      <div class="board" id="board">
+        <svg class="edges" id="edges"></svg>
+        <div class="rowx">
+          <div class="nd pill" id="n-start">START</div>
+          <div class="nd sup" id="n-sup"><span class="badge">실행 중</span><b>감독자</b><small>supervisor</small></div>
+        </div>
+        <div class="grp">
+          <span class="grp-t">조사 서브에이전트</span><span class="par">Send 병렬</span>
+          <div class="nd reg" id="n-reg"><span class="badge">실행 중</span><b>규정 담당</b><small>regulation</small><span class="wait">끝남 · 기다리는 중</span></div>
+          <div class="nd dis" id="n-dis"><span class="badge">실행 중</span><b>공시 담당</b><small>disclosure</small><span class="wait">끝남 · 기다리는 중</span></div>
+          <div class="nd off" id="n-not"><b>공지 담당</b><small>과제 2</small></div>
+        </div>
+        <div class="rowx">
+          <div class="nd" id="n-col"><span class="badge">합류</span><b>모으기</b><small>collect</small></div>
+          <div class="nd wri" id="n-wri"><span class="badge">실행 중</span><b>작성자</b><small>writer + dedupe</small></div>
+          <div class="nd ver" id="n-ver"><span class="badge">실행 중</span><b>검증자</b><small>verifier</small></div>
+        </div>
+        <div class="rowx">
+          <div class="nd off" id="n-app"><b>승인</b><small>4-2</small></div>
+          <div class="nd off" id="n-mask"><b>마스킹</b><small>4-2</small></div>
+          <div class="nd off" id="n-aud"><b>감사 로그</b><small>4-2</small></div>
+          <div class="nd pill" id="n-end">END</div>
+        </div>
+        <div class="token" id="tok1"></div>
+        <div class="token t2" id="tok2"></div>
+      </div>
+      <div class="side">
+        <div class="card msg" id="msg"></div>
+        <div class="card">
+          <h3>공유 state <span class="mono" style="font-size:12px;color:var(--sub);font-weight:400">노란색 = 이번 단계에서 바뀐 곳</span></h3>
+          <pre class="state" id="statebox"></pre>
+          <div class="ex">기본 질문(<code>python -m day2.agents</code>)입니다. 공시 값은 녹화 응답(A사), 하위 질문과 조항 번호(제○조)는 흐름을 보여 주기 위한 예시입니다.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ② 시간 -->
+  <section class="panel" id="p-time">
+    <p class="lead">같은 일을 하는데 순서만 다릅니다. 병렬이면 두 담당이 겹쳐 돌아서, 둘 중 오래 걸리는 쪽만큼만 기다립니다. <button class="btn ghost" id="gplay" style="margin-left:6px">▶ 다시 그리기</button></p>
+    <div class="gantt">
+      <div class="g-row"><div class="g-lbl">3-2 순차</div><div class="g-track" id="g-seq"></div></div>
+      <div class="g-total" id="t-seq"></div>
+      <div class="g-row" style="margin-top:14px"><div class="g-lbl">3-3 병렬</div><div class="g-track two" id="g-par"></div></div>
+      <div class="g-total" id="t-par"></div>
+      <div class="g-axis" style="margin-top:6px"><div></div><div><span>0</span><span>시간 →</span></div></div>
+    </div>
+    <p class="note">막대 길이는 구조를 보여 주기 위한 예시 비율입니다. 실제 기록(결합 질문 10건)의 지연 중앙값은 순차 40.8초, 병렬 31.0초였습니다.</p>
+    <div class="grid2">
+      <div class="card"><h3>왜 빨라지나</h3>
+        <ul style="margin:0;padding-left:18px">
+          <li>두 담당은 서로의 결과가 필요 없습니다. 그래서 동시에 시작해도 됩니다.</li>
+          <li>규정 담당은 별도 스레드(<code>asyncio.to_thread</code>)에서, 공시 담당은 비동기(MCP 도구)로 돌아 실제로 겹칩니다.</li>
+          <li>모으기(collect)는 <b>둘 다 끝날 때까지</b> 기다린 뒤 작성자로 넘어갑니다.</li>
+        </ul></div>
+      <div class="card"><h3>바뀌지 않는 것</h3>
+        <ul style="margin:0;padding-left:18px">
+          <li>토큰과 비용: 같은 일을 하므로 거의 같습니다(질문당 48,148 → 50,662).</li>
+          <li>답을 쓰는 곳: 여전히 작성자 하나입니다. 읽기는 병렬, 쓰기는 하나.</li>
+          <li>호출 한도: 동시에 부르는 LLM 수가 늘어 429 오류가 나기 쉬워집니다. 그럴 때는 <code>PARALLEL = False</code>로 바꿉니다.</li>
+        </ul></div>
+    </div>
+  </section>
+
+  <!-- ③ 근거 공유 -->
+  <section class="panel" id="p-ev">
+    <p class="lead">두 담당이 같은 state의 <code>evidence</code>에 동시에 씁니다. 누적 항목(<code>operator.add</code>)이라 서로 덮어쓰지 않고 이어 붙습니다. 작성자는 <code>dedupe()</code>로 같은 근거를 한 번만 남긴 뒤 답을 씁니다. <button class="btn ghost" id="evplay" style="margin-left:6px">▶ 재생</button></p>
+    <div class="evbox">
+      <div class="src" style="background:var(--reg);border-color:var(--reg-b)"><h4>규정 담당</h4><div id="src-r"></div></div>
+      <div class="shared"><h4>공유 state · evidence <span class="k" id="evcount"></span></h4><div id="shared"></div></div>
+      <div class="src" style="background:var(--dis);border-color:var(--dis-b)"><h4>공시 담당</h4><div id="src-d"></div></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h3>같은 근거를 판단하는 기준</h3>
+      <p style="margin:0">네 칸이 모두 같으면 같은 근거입니다: <span class="tool">source_type</span><span class="tool">doc_or_rcept</span><span class="tool">article_or_date</span><span class="tool">as_of</span></p>
+      <p class="note" style="margin-bottom:0">중복은 주로 검증 실패로 담당을 다시 부를 때 생깁니다. 다시 조사한 근거가 앞의 근거 뒤에 또 붙기 때문입니다. 3-2(중복 제거 없음)에서 되돌림이 일어난 실행에서는 근거가 16건에서 32건으로 두 배가 된 적이 있습니다.</p>
+    </div>
+  </section>
+
+  <!-- ④ 다른 점 -->
+  <section class="panel" id="p-diff">
+    <div class="grid2">
+      <div class="card">
+        <h3>정답 코드에서 3-2 → 3-3 바뀐 곳</h3>
+        <div class="diff">
+          <div class="m">-PARALLEL = False   # 3-2: 담당 에이전트를 차례로 실행</div>
+          <div class="p">+PARALLEL = True    # 3-3: 병렬 조사(Send). 오류가 나면 False로</div>
+          <div class="m">-DEDUPE = False     # 3-2: 근거 중복 제거 없음</div>
+          <div class="p">+DEDUPE = True      # 3-3: 같은 근거는 중복 제거</div>
+        </div>
+        <p class="note" style="margin-bottom:0">정답 코드는 3-2부터 evidence state와 작성자 하나 구조를 넣어 두었습니다. 그래서 3-3에서는 이 두 값만 바뀝니다. 수강생이 3-2를 감독자 구조만으로 만들었다면, 3-3 지시문으로 evidence와 writer를 새로 넣게 됩니다.</p>
+      </div>
+      <div class="card">
+        <h3>두 값이 바꾸는 동작</h3>
+        <div class="scroll"><table>
+          <tr><th></th><th>False (3-2)</th><th>True (3-3)</th></tr>
+          <tr><td><code>PARALLEL</code></td><td>감독자가 첫 담당에게만 <code>Send</code>. 담당이 끝나면 다음 담당에게 <code>Send</code></td><td>감독자가 모든 담당에게 <code>Send</code>를 한꺼번에. 모두 끝나면 모으기로</td></tr>
+          <tr><td><code>DEDUPE</code></td><td>evidence를 그대로 작성자에게</td><td>네 칸이 같은 근거는 하나만 남김</td></tr>
+        </table></div>
+      </div>
+    </div>
+    <h2>코드에서 갈리는 곳</h2>
+    <div class="grid2">
+      <div class="card"><b><code>dispatch()</code></b> · 감독자 다음
+<pre class="state" style="margin-top:6px">sends = [Send(name, {"question": q, "role": ..., "feedback": ...})
+         for name, q in state["tasks"].items()]
+return sends if PARALLEL else sends[:1]</pre></div>
+      <div class="card"><b><code>writer()</code></b> · 작성자 시작
+<pre class="state" style="margin-top:6px">ev = dedupe(state["evidence"]) if DEDUPE else state["evidence"]
+# key = (source_type, doc_or_rcept, article_or_date, as_of)</pre></div>
+    </div>
+    <p class="note">공시 담당과 작성자의 출력 한도(16,000), 원문을 조회한 공시를 근거로 남기는 규칙, 공시 인용 번호 정리는 3-2와 같이 3-3 사본에도 들어 있습니다(커밋 <code>69347cb</code>).</p>
+  </section>
+
+  <!-- ⑤ 비교 -->
+  <section class="panel" id="p-cmp">
+    <p class="lead">결합 질문 10건 강사 실행 기록입니다(<code>compare_fusion</code>). 막대를 다시 그리려면 탭을 다시 누릅니다.</p>
+    <div class="grid2">
+      <div class="card">
+        <div class="metric"><h4>출처 누락 · 질문 수 (적을수록 좋음)</h4>
+          <div class="bar-row"><span>3-2 순차</span><div class="bbar"><i class="s" data-w="40"></i></div><span>4 / 10</span></div>
+          <div class="bar-row"><span>3-3 병렬</span><div class="bbar"><i class="m" data-w="10"></i></div><span>1 / 10</span></div></div>
+        <div class="metric"><h4>지연 중앙값 (짧을수록 좋음)</h4>
+          <div class="bar-row"><span>3-2 순차</span><div class="bbar"><i class="s" data-w="100"></i></div><span>40.8초</span></div>
+          <div class="bar-row"><span>3-3 병렬</span><div class="bbar"><i class="m" data-w="76"></i></div><span>31.0초</span></div></div>
+        <div class="metric" style="margin:0"><h4>질문당 토큰</h4>
+          <div class="bar-row"><span>3-2 순차</span><div class="bbar"><i class="s" data-w="95"></i></div><span>48,148</span></div>
+          <div class="bar-row"><span>3-3 병렬</span><div class="bbar"><i class="m" data-w="100"></i></div><span>50,662</span></div></div>
+      </div>
+      <div class="card">
+        <div class="scroll"><table>
+          <tr><th>항목</th><th>3-2</th><th>3-3</th></tr>
+          <tr><td>출처 누락 (항목 수)</td><td>6</td><td>2</td></tr>
+          <tr><td>중복 검색</td><td>2</td><td>2</td></tr>
+          <tr><td>중복 근거</td><td>0</td><td>0</td></tr>
+        </table></div>
+        <h3 style="margin-top:12px">읽는 법</h3>
+        <ul style="margin:0;padding-left:18px">
+          <li><b>지연:</b> 병렬 효과가 그대로 보입니다(약 24% 감소).</li>
+          <li><b>중복 근거 0 → 0:</b> 이 10건에서는 되돌림이 거의 없어 중복 제거가 할 일이 없었습니다.</li>
+          <li><b>중복 검색 2 → 2:</b> 같은 도구를 같은 인자로 다시 부르는 것은 담당 내부 LLM의 선택이라 이 두 값으로는 줄지 않습니다.</li>
+          <li><b>출처 누락 4 → 1:</b> 코드 차이(병렬, 중복 제거)로 설명하기 어렵습니다. 실행마다 LLM 결과가 달라지는 편차일 수 있습니다. 확인하려면 2회차를 돌려 비교합니다.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">GUIDE의 확인 기준은 "출처 누락 0건", "중복 검색 수 감소"입니다. 기록은 둘 다 채우지 못했습니다. 결과 그대로 적고 이유를 설명하면 됩니다.</p>
+  </section>
+
+  <!-- ⑥ 실행 -->
+  <section class="panel" id="p-run">
+    <div class="grid2">
+      <div class="card">
+        <h3>실행 (<code>lab\1028\3-3</code>에서)</h3>
+        <pre class="cmd">python -m src.run_eval --graph day2.agents --name multi --set eval/sets/combined.jsonl</pre>
+        <pre class="cmd">python -m day2.compare_fusion eval/results/multi_seq_r1.jsonl eval/results/multi_r1.jsonl</pre>
+        <pre class="cmd">python -m src.run_eval --graph day2.agents --name multi_q30</pre>
+        <p class="note" style="margin-bottom:0">마지막 줄(평가셋 30건)은 과제 2에서 "추가 전" 점수로 씁니다. 자세한 준비와 기록된 출력은 같은 폴더의 <code>commands.html</code>에 있습니다.</p>
+      </div>
+      <div class="card">
+        <h3>결합 규칙: 정답 작성자 지시문에 들어 있는 것</h3>
+        <ol style="margin:0;padding-left:20px">
+          <li>사내 규정이 우선이다.</li>
+          <li>외부 공시 정보에는 접수번호와 제출일(기준일)을 함께 적는다.</li>
+          <li>규정과 공시가 충돌하면 둘 다 제시한다.</li>
+          <li>인용 형식: 규정은 문서명·제N조·시행일, 공시는 <code>DART</code>·접수번호·제출일.</li>
+          <li>근거로 답할 수 없으면 거부한다(<code>sufficient=false</code>).</li>
+        </ol>
+        <p class="note" style="margin-bottom:0">GUIDE의 "결합 규칙"은 수강생이 직접 적는 칸입니다. 위 내용은 참고용입니다. 실제 공시로 시험했을 때 1번과 5번 때문에 공시만 묻는 질문을 가끔 거부한 사례가 있었습니다(3-2 <code>debug_report.html</code>).</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// 탭
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(t => t.addEventListener("click", () => {
+  tabs.forEach(x => x.classList.toggle("on", x === t));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === "p-" + t.dataset.t));
+  if (t.dataset.t === "cmp") drawBars();
+  if (t.dataset.t === "time") drawGantt();
+  if (t.dataset.t === "flow") requestAnimationFrame(() => show(cur));
+}));
+
+// ---------- ① 흐름 ----------
+const Q = "A사 주식분할에 따른 종목정보 변경 정보는 언제까지 참가사에 배포해야 하나?";
+const EDGES = [["n-start","n-sup"],["n-sup","n-reg"],["n-sup","n-dis"],["n-reg","n-col"],["n-dis","n-col"],
+  ["n-col","n-wri"],["n-wri","n-ver"],["n-ver","n-app"],["n-app","n-mask"],["n-mask","n-aud"],["n-aud","n-end"]];
+const STEPS = [
+  {nodes:["n-start"], who:"입력", title:"질문이 들어옵니다", body:`<p>질문과 역할(<code>role</code>)이 공유 state에 들어갑니다.</p>`,
+   state:{question:Q, role:"staff"}, nw:["question","role"]},
+  {nodes:["n-sup"], edges:[["n-start","n-sup"]], who:"supervisor · LLM 1번", title:"감독자가 일을 나눕니다",
+   body:`<p>3-2와 같습니다. 담당별 하위 질문을 만들고, 규정 담당은 항상 넣습니다.</p>`,
+   add:{tasks:{regulation:"주식분할 시 종목정보 변경 정보 배포 기한(사내 규정)", disclosure:"A사 주식분할 공시의 접수번호와 제출일"}}, nw:["tasks"]},
+  {nodes:["n-reg","n-dis"], edges:[["n-sup","n-reg"],["n-sup","n-dis"]], two:true, who:"Send × 2 · 동시에", title:"두 담당이 동시에 출발합니다",
+   body:`<p><code>dispatch()</code>가 <code>Send</code> 두 개를 한꺼번에 돌려줍니다(<code>PARALLEL = True</code>). LangGraph가 같은 단계에서 둘을 함께 실행합니다.</p><p>3-2에서는 여기서 규정 담당 하나만 출발했습니다.</p>`, nw:[]},
+  {nodes:["n-reg","n-dis"], two:true, who:"regulation ∥ disclosure", title:"각자 조사하고 같은 evidence에 씁니다",
+   body:`<p><b>규정 담당</b> <span class="tool">hybrid_search</span><span class="tool">grep</span><span class="tool">read_file</span></p><p><b>공시 담당</b> <span class="tool">search_disclosures</span><span class="tool">get_disclosure_document</span></p><p>두 담당이 같은 <code>evidence</code>, <code>summaries</code>에 동시에 씁니다. 누적 항목이라 덮어쓰지 않고 이어 붙습니다.</p>`,
+   addAcc:{summaries:["[regulation] … 까지 배포", "[disclosure] A사 주식분할결정 (20261020000311)"],
+           evidence:["regulation · 종목정보변경절차 제○조 (2025-07-01)", "dart · 20261020000311 (2026-10-20)"]}, nw:["summaries","evidence"]},
+  {nodes:["n-col"], waiting:["n-dis"], edges:[["n-reg","n-col"]], who:"collect", title:"먼저 끝난 쪽은 기다립니다",
+   body:`<p>규정 담당이 먼저 끝나도 모으기는 바로 넘어가지 않습니다. <b>공시 담당까지 끝나야</b> 다음 단계로 갑니다.</p>`, nw:[]},
+  {nodes:["n-col"], edges:[["n-reg","n-col"],["n-dis","n-col"]], who:"collect", title:"둘 다 도착하면 합류",
+   body:`<p>전체 시간은 두 담당 중 <b>오래 걸린 쪽</b>만큼입니다. 순차였다면 두 시간을 더한 만큼이었습니다.</p>`, nw:[]},
+  {nodes:["n-wri"], edges:[["n-col","n-wri"]], who:"writer · dedupe + LLM 1번", title:"작성자: 중복 제거 후 답 작성",
+   body:`<p>먼저 <code>dedupe()</code>로 같은 근거를 하나만 남깁니다(<code>DEDUPE = True</code>). 그다음 근거만으로 답과 인용을 씁니다. 답을 쓰는 곳은 여기 하나입니다.</p>`,
+   add:{answer:"… 까지 배포해야 합니다. (A사 주식분할결정, 접수번호 20261020000311, 2026-10-20)", citations:["종목정보변경절차 제○조 2025-07-01","DART 20261020000311 2026-10-20"]}, nw:["answer","citations"]},
+  {nodes:["n-ver"], edges:[["n-wri","n-ver"]], who:"verifier · 규칙", title:"검증자가 인용을 확인합니다",
+   body:`<p>3-2와 같습니다. 실패하면 지적받은 담당에게만 다시 보냅니다. 지적받은 담당이 둘이면 <b>둘이 동시에</b> 다시 조사합니다.</p>`,
+   add:{verify_issues:[], retries:0}, nw:["verify_issues","retries"]},
+  {nodes:["n-end"], edges:[["n-ver","n-app"],["n-app","n-mask"],["n-mask","n-aud"],["n-aud","n-end"]], who:"END", title:"답이 나갑니다",
+   body:`<p>승인·마스킹·감사는 4-2부터 동작하고, 지금은 통과합니다.</p>`, nw:[]},
+];
+let cur = 0, timer = null;
+const board = document.getElementById("board");
+function buildState(upto){
+  const S = {};
+  for (let i = 0; i <= upto; i++){
+    const s = STEPS[i];
+    if (s.state) Object.assign(S, JSON.parse(JSON.stringify(s.state)));
+    if (s.add) Object.assign(S, JSON.parse(JSON.stringify(s.add)));
+    if (s.addAcc) for (const [k, v] of Object.entries(s.addAcc)) S[k] = [...(S[k] || []), ...v];
+  }
+  return S;
+}
+function renderState(S, nw){
+  const keys = Object.keys(S);
+  const lines = ["{", ...keys.map((k, i) => {
+    const line = "  " + (k + ": " + JSON.stringify(S[k], null, 1).replace(/\n\s*/g, " ")).replace(/&/g,"&amp;").replace(/</g,"&lt;") + (i < keys.length - 1 ? "," : "");
+    return nw.includes(k) ? `<span class="new">${line}</span>` : line;
+  }), "}"];
+  document.getElementById("statebox").innerHTML = lines.join("\n");
+}
+function center(id){
+  const b = board.getBoundingClientRect(), r = document.getElementById(id).getBoundingClientRect();
+  return {x: r.left - b.left + r.width/2, y: r.top - b.top + r.height/2, w: r.width, h: r.height};
+}
+function drawEdges(hot){
+  const svg = document.getElementById("edges"), b = board.getBoundingClientRect();
+  svg.setAttribute("viewBox", `0 0 ${b.width} ${b.height}`);
+  const isHot = (a, c) => (hot || []).some(([x, y]) => x === a && y === c);
+  svg.innerHTML = EDGES.map(([a, c]) => {
+    const p = center(a), q = center(c);
+    let d;
+    if (Math.abs(p.y - q.y) < 5) d = `M${p.x + (q.x > p.x ? p.w/2 : -p.w/2)},${p.y} L${q.x + (q.x > p.x ? -q.w/2 : q.w/2)},${q.y}`;
+    else { const y1 = p.y + p.h/2, y2 = q.y - q.h/2, my = (y1 + y2)/2; d = `M${p.x},${y1} C${p.x},${my} ${q.x},${my} ${q.x},${y2}`; }
+    return `<path d="${d}" class="${isHot(a, c) ? "hot" : ""}"/>`;
+  }).join("");
+}
+function place(tok, id){ const c = center(id); tok.style.opacity = 1; tok.style.left = (c.x - 8) + "px"; tok.style.top = (c.y - c.h/2 - 18) + "px"; }
+function show(i){
+  cur = Math.max(0, Math.min(i, STEPS.length - 1));
+  const s = STEPS[cur];
+  document.querySelectorAll(".nd").forEach(n => n.classList.remove("active","done","waiting"));
+  STEPS.slice(0, cur).flatMap(x => x.nodes).forEach(id => document.getElementById(id).classList.add("done"));
+  s.nodes.forEach(id => { const e = document.getElementById(id); e.classList.remove("done"); e.classList.add("active"); });
+  (s.waiting || []).forEach(id => { const e = document.getElementById(id); e.classList.remove("done"); e.classList.add("active"); });
+  if (cur === 4) document.getElementById("n-reg").classList.add("waiting");
+  drawEdges(s.edges);
+  const t1 = document.getElementById("tok1"), t2 = document.getElementById("tok2");
+  if (s.two){ place(t1, "n-reg"); place(t2, "n-dis"); }
+  else if (cur === 4){ place(t1, "n-col"); place(t2, "n-dis"); }
+  else { place(t1, s.nodes[0]); place(t2, s.nodes[0]); t2.style.opacity = 0; }
+  document.getElementById("msg").innerHTML = `<h3>${cur + 1}. ${s.title}<span class="who">${s.who}</span></h3>${s.body}`;
+  renderState(buildState(cur), s.nw || []);
+  document.getElementById("stepno").textContent = `${cur + 1} / ${STEPS.length}`;
+  document.getElementById("prev").disabled = cur === 0;
+  document.getElementById("next").disabled = cur === STEPS.length - 1;
+}
+function stop(){ clearInterval(timer); timer = null; document.getElementById("play").textContent = "▶ 재생"; }
+document.getElementById("play").onclick = () => {
+  if (timer) return stop();
+  if (cur >= STEPS.length - 1) show(0);
+  document.getElementById("play").textContent = "❚❚ 멈춤";
+  timer = setInterval(() => { if (cur >= STEPS.length - 1) return stop(); show(cur + 1); }, 2300);
+};
+document.getElementById("next").onclick = () => { stop(); show(cur + 1); };
+document.getElementById("prev").onclick = () => { stop(); show(cur - 1); };
+document.getElementById("reset").onclick = () => { stop(); show(0); };
+window.addEventListener("resize", () => show(cur));
+document.fonts && document.fonts.ready.then(() => show(cur));
+show(0);
+
+// ---------- ② 시간표 (예시 비율) ----------
+const C = {sup:["#eef1f8","#7f92c2"], reg:["#eef4ee","#7fae80"], dis:["#efeafa","#9583cf"], wri:["#fbf1e6","#d0965a"], ver:["#fbecec","#cc7b7b"]};
+const SEQ = [["sup",0,8,"감독자"],["reg",8,40,"규정 담당"],["dis",48,30,"공시 담당"],["wri",78,15,"작성자"],["ver",93,4,"검증"]];
+const PAR = [["sup",0,8,"감독자",0],["reg",8,40,"규정 담당",0],["dis",8,30,"공시 담당",1],["wri",48,15,"작성자",0],["ver",63,4,"검증",0]];
+const TOTAL = 100;
+function seg(host, [k, s, w, lbl, lane]){
+  const d = document.createElement("div");
+  d.className = "g-seg";
+  d.style.left = (s / TOTAL * 100) + "%";
+  d.style.background = C[k][0]; d.style.borderColor = C[k][1];
+  d.style.top = (lane ? 29 : 3) + "px";
+  d.textContent = lbl; d.dataset.w = (w / TOTAL * 100) + "%";
+  host.appendChild(d);
+  return d;
+}
+function drawGantt(){
+  const a = document.getElementById("g-seq"), b = document.getElementById("g-par");
+  a.innerHTML = ""; b.innerHTML = "";
+  const all = [...SEQ.map(x => seg(a, x)), ...PAR.map(x => seg(b, x))];
+  all.forEach((d, i) => setTimeout(() => d.style.width = d.dataset.w, 150 + i * 120));
+  document.getElementById("t-seq").textContent = "끝나는 시점: 97 (감독자 + 규정 + 공시 + 작성 + 검증)";
+  document.getElementById("t-par").textContent = "끝나는 시점: 67 (감독자 + max(규정, 공시) + 작성 + 검증)";
+}
+
+// ---------- ③ 근거 공유 ----------
+const R = [{t:"종목정보변경절차 제○조", k:"regulation · 2025-07-01"}, {t:"참가사통보절차 제○조", k:"regulation · …"}];
+const D = [{t:"DART 20261020000311", k:"dart · 2026-10-20"}];
+const RETRY = {t:"종목정보변경절차 제○조", k:"regulation · 2025-07-01", dup:true};
+function chip(o, cls){ const c = document.createElement("div"); c.className = `chip ${cls} hide` + (o.dup ? " dup" : ""); c.innerHTML = `${o.t}<br><span class="k">${o.k}</span>`; return c; }
+let evTimers = [];
+function evPlay(){
+  evTimers.forEach(clearTimeout); evTimers = [];
+  const sr = document.getElementById("src-r"), sd = document.getElementById("src-d"), sh = document.getElementById("shared"), cnt = document.getElementById("evcount");
+  sr.innerHTML = ""; sd.innerHTML = ""; sh.innerHTML = ""; cnt.textContent = "0건";
+  let n = 0;
+  const later = (ms, f) => evTimers.push(setTimeout(f, ms));
+  const push = (o, cls, src, ms) => {
+    const a = chip(o, cls); src.appendChild(a); later(ms, () => a.classList.remove("hide"));
+    const b = chip(o, cls); sh.appendChild(b); later(ms + 500, () => { b.classList.remove("hide"); cnt.textContent = (++n) + "건"; });
+    return b;
+  };
+  push(R[0], "r", sr, 200); push(D[0], "d", sd, 300); push(R[1], "r", sr, 900);
+  const note = document.createElement("div"); note.className = "k"; note.style.margin = "8px 0 0"; sh.appendChild(note);
+  later(1900, () => note.textContent = "↓ 검증 실패로 규정 담당을 다시 부르면 같은 근거가 또 붙음");
+  const dupEl = (() => { const a = chip(RETRY, "r"); sr.appendChild(a); later(2400, () => a.classList.remove("hide"));
+                         const b = chip(RETRY, "r"); sh.appendChild(b); later(2900, () => { b.classList.remove("hide"); cnt.textContent = (++n) + "건"; }); return b; })();
+  later(3900, () => { dupEl.classList.add("gone"); note.textContent = "dedupe(): 네 칸이 같은 근거 → 하나만 남김"; cnt.textContent = (n - 1) + "건 (작성자에게 가는 수)"; });
+}
+document.getElementById("evplay").onclick = evPlay;
+evPlay();
+
+// ---------- ⑤ 막대 ----------
+function drawBars(){
+  const bars = document.querySelectorAll(".bbar i");
+  bars.forEach(b => b.style.width = 0);
+  setTimeout(() => bars.forEach(b => b.style.width = b.dataset.w + "%"), 60);
+}
+</script>
+</body>
+</html>
