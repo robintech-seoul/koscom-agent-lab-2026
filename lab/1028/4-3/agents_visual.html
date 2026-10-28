@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4-3 문서 개정 반영 보기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#ffffff; --ink:#1d1d1f; --sub:#5f6368; --line:#d9d9d6; --soft:#fafaf8; --code:#f4f4f2;
+  --cur:#eaf5ee; --cur-b:#8cc3a0; --old:#f3f3f1; --old-b:#b9b9b4; --new:#e7f0fb; --new-b:#3d6fb6;
+  --del:#fbecec; --del-b:#d48f8f; --bad:#c0392b; --ok:#2e7d4f;
+  --rag:#eef1f8; --rag-b:#7f92c2; --wiki:#fbf1e6; --wiki-b:#d0965a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;line-height:1.55;font-size:15px}
+.wrap{max-width:1120px;margin:0 auto;padding:24px 16px 60px}
+.eyebrow{font-size:13px;color:var(--sub)}
+h1{font-size:25px;margin:4px 0 6px}
+h2{font-size:17px;margin:22px 0 8px}
+.lead{color:var(--sub);margin:0 0 16px}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.88em}
+code{background:var(--code);padding:1px 5px;border-radius:4px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1.5px solid var(--line);margin-bottom:18px}
+.tab{border:1.5px solid var(--line);border-bottom:none;background:var(--soft);padding:8px 13px;border-radius:10px 10px 0 0;cursor:pointer;font:inherit;font-size:14px;color:var(--sub);margin-bottom:-1.5px}
+.tab.on{background:var(--bg);color:var(--ink);font-weight:600;border-bottom:1.5px solid var(--bg)}
+.panel{display:none}.panel.on{display:block}
+.btn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn:disabled{opacity:.35;cursor:default}
+.seg .btn:not(.sel){background:#fff;color:var(--ink)}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.stepno{font-size:13px;color:var(--sub);margin-left:auto}
+.card{border:1.5px solid var(--line);border-radius:12px;background:#fff;padding:12px 14px}
+.card h3{margin:0 0 6px;font-size:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.note{border-left:3px solid var(--line);padding:4px 12px;color:var(--sub);margin:12px 0}
+.tool{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--code);border-radius:6px;padding:2px 7px;margin:2px 4px 2px 0}
+.pill{display:inline-block;border-radius:999px;padding:0 9px;font-size:12px;border:1.5px solid var(--line);background:#fff}
+.p-new{background:var(--new);border-color:var(--new-b);color:#1f4e8f}
+.p-rev{background:var(--cur);border-color:var(--cur-b);color:var(--ok)}
+.p-del{background:var(--del);border-color:var(--del-b);color:var(--bad)}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--code);font-weight:600}
+.scroll{overflow-x:auto}
+pre.box{margin:6px 0 0;background:var(--code);border-radius:8px;padding:10px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-all}
+td.ok{color:var(--ok);font-weight:600}
+td.miss{color:var(--bad);font-weight:600}
+td.hist{color:#1f4e8f;font-weight:600}
+
+/* 두 방식 */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.lane{border:1.5px solid;border-radius:12px;padding:12px 14px}
+.lane.rag{background:var(--rag);border-color:var(--rag-b)}
+.lane.wiki{background:var(--wiki);border-color:var(--wiki-b)}
+.lane h3{margin:0 0 8px;font-size:15px}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chain .s{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:4px 9px;font-size:13px}
+.chain .a{color:var(--sub)}
+
+/* 증분 색인 */
+.stage{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}
+.board{border:1.5px solid var(--line);border-radius:14px;background:var(--soft);padding:14px}
+.counters{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.cnt{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:6px 8px;text-align:center}
+.cnt b{display:block;font-size:22px;line-height:1.2;font-family:"IBM Plex Mono",monospace}
+.cnt span{font-size:12px;color:var(--sub)}
+.docs{display:flex;flex-direction:column;gap:8px}
+.docrow{display:grid;grid-template-columns:150px 1fr;gap:8px;align-items:center}
+.docname{font-size:13px;font-weight:600}
+.docname small{display:block;font-weight:400;color:var(--sub);font-family:"IBM Plex Mono",monospace;font-size:11px}
+.chips{display:flex;gap:3px;flex-wrap:wrap}
+.ck{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--cur-b);background:var(--cur);transition:all .5s}
+.ck.old{background:var(--old);border-color:var(--old-b)}
+.ck.new{background:var(--new);border-color:var(--new-b)}
+.ck.del{background:var(--del);border-color:var(--del-b);opacity:.25;transform:scale(.6)}
+.ck.hide{opacity:0;transform:scale(.3)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--sub);margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px;border:1.5px solid}
+.side{display:flex;flex-direction:column;gap:12px}
+.msg h3 .who{font-size:12px;color:var(--sub);font-weight:400;margin-left:6px}
+.msg p{margin:4px 0}.msg ul{margin:4px 0;padding-left:18px}
+.dfbox{font-family:"IBM Plex Mono",monospace;font-size:12.5px;background:var(--code);border-radius:8px;padding:8px 10px;transition:background .5s}
+.dfbox.hl{background:#fff2b8}
+
+/* 필터 */
+.cands{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.cand{display:grid;grid-template-columns:1fr auto;gap:8px;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;transition:opacity .4s, transform .4s}
+.cand.out{opacity:.25;transform:translateX(10px)}
+.cand .why{font-size:12px;color:var(--bad)}
+.cand.out .why{display:block}
+.cand .why{display:none}
+
+@media (max-width:860px){.stage,.grid2,.two,.grid4,.counters{grid-template-columns:1fr 1fr}.docrow{grid-template-columns:1fr}}
+@media (max-width:560px){.stage,.grid2,.two,.grid4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">KOSCOM 과정1 · 1028 / 4-3 · <code>day2/update_index.py</code>, <code>day2/compare_update.py</code>, 위키 ingest·lint</div>
+  <h1>4-3 문서 개정 반영: 원본이 바뀌면 색인과 위키도 바꿔야 한다</h1>
+  <p class="lead">원본 문서가 바뀌어도 검색 색인과 위키는 저절로 바뀌지 않습니다. <code>data/updates/</code>의 신규·개정·폐지 문서 4건을 RAG(증분 색인)와 위키(ingest, lint)에 각각 반영하고, 개정 전 내용이 답에 남는지 비교합니다. 에이전트 그래프는 새로 만들지 않습니다.</p>
+
+  <div class="tabs">
+    <button class="tab on" data-t="sum">① 무엇이 바뀌나</button>
+    <button class="tab" data-t="idx">② RAG 증분 색인 재생</button>
+    <button class="tab" data-t="flt">③ 검색 기본 필터</button>
+    <button class="tab" data-t="wiki">④ 위키 갱신과 점검</button>
+    <button class="tab" data-t="cmp">⑤ 두 방식 비교</button>
+    <button class="tab" data-t="run">⑥ 실행과 되돌리기</button>
+  </div>
+
+  <!-- ① -->
+  <section class="panel on" id="p-sum">
+    <h2 style="margin-top:0">data/updates/의 문서 4건 (2026-10-26)</h2>
+    <div class="grid4">
+      <div class="card"><span class="pill p-rev">개정</span><h3 style="margin-top:6px">장애등급기준</h3>1등급 전체 시세 전송 중단 기준<br><b>5분 → 3분 이상</b> (제4조)<br><span class="mono" style="color:var(--sub)">HB-OPS-005 · public · PDF</span></div>
+      <div class="card"><span class="pill p-rev">개정</span><h3 style="margin-top:6px">시장운영공지기준</h3>정기 공지 게시 시점<br><b>장 개시 30분 → 60분 전</b> (제4조)<br><span class="mono" style="color:var(--sub)">public · PDF</span></div>
+      <div class="card"><span class="pill p-new">신규</span><h3 style="margin-top:6px">생성형AI이용지침</h3>외부 생성형 AI에는<br><b>일반 등급 문서만</b> 입력 (제5조)<br><span class="mono" style="color:var(--sub)">public · DOCX</span></div>
+      <div class="card"><span class="pill p-del">폐지</span><h3 style="margin-top:6px">백업및복구기준 폐지 공고</h3>백업및복구기준(HB-OPS-102)을 <b>폐지</b>하고 업무연속성계획에 통합<br><span class="mono" style="color:var(--sub)">internal · DOCX</span></div>
+    </div>
+    <h2>같은 변경을 두 가지 방식으로 반영합니다</h2>
+    <div class="two">
+      <div class="lane rag"><h3>RAG: 증분 색인 <span class="mono" style="font-weight:400;color:var(--sub)">(코드, LLM 없음)</span></h3>
+        <div class="chain"><span class="s">새 문서 파싱</span><span class="a">→</span><span class="s">개정 전 판 superseded</span><span class="a">→</span><span class="s">폐지 문서 삭제</span><span class="a">→</span><span class="s">색인에 새 조항만 추가</span><span class="a">→</span><span class="s">기본 필터 "현재 시행 중"</span></div>
+        <p style="margin:8px 0 0;font-size:14px">조항 단위 데이터라 프로그램으로 정확히 바꿀 수 있습니다. 바뀐 문서만 처리합니다.</p></div>
+      <div class="lane wiki"><h3>위키: ingest + lint <span class="mono" style="font-weight:400;color:var(--sub)">(Claude Code)</span></h3>
+        <div class="chain"><span class="s">원문 읽기</span><span class="a">→</span><span class="s">관련 페이지 찾아 고치기</span><span class="a">→</span><span class="s">개정 전 내용은 "이력"으로</span><span class="a">→</span><span class="s">index·log 갱신</span><span class="a">→</span><span class="s">lint로 점검</span></div>
+        <p style="margin:8px 0 0;font-size:14px">사람이 읽는 요약 페이지라 LLM이 문장을 고칩니다. 어느 페이지에 영향이 있는지 찾는 일도 LLM이 합니다.</p></div>
+    </div>
+    <p class="note">개정 함정 문항의 결과가 과제 2 판정표의 "현행성" 칸에 들어갑니다.</p>
+  </section>
+
+  <!-- ② -->
+  <section class="panel" id="p-idx">
+    <div class="bar">
+      <button class="btn" id="play">▶ 재생</button>
+      <button class="btn ghost" id="prev">◀ 이전</button>
+      <button class="btn ghost" id="next">다음 ▶</button>
+      <span class="stepno" id="stepno"></span>
+    </div>
+    <div class="stage">
+      <div class="board">
+        <div class="counters">
+          <div class="cnt"><b id="c-all">272</b><span>조항 수</span></div>
+          <div class="cnt"><b id="c-new">0</b><span>새로 추가</span></div>
+          <div class="cnt"><b id="c-del">0</b><span>삭제</span></div>
+          <div class="cnt"><b id="c-old">–</b><span>개정 전(superseded)</span></div>
+        </div>
+        <div class="docs" id="docs"></div>
+        <div class="legend"><span><i style="background:var(--cur);border-color:var(--cur-b)"></i>현행</span><span><i style="background:var(--old);border-color:var(--old-b)"></i>개정 전</span><span><i style="background:var(--new);border-color:var(--new-b)"></i>새로 추가</span><span><i style="background:var(--del);border-color:var(--del-b)"></i>삭제</span></div>
+        <p class="note" style="margin-bottom:0">칸 하나가 조항 하나입니다(실제 조항 수). 영향을 받는 문서만 그렸습니다. 숫자 카운터는 강사 실행 기록입니다.</p>
+      </div>
+      <div class="side">
+        <div class="card msg" id="msg"></div>
+        <div class="card"><h3>검색 기본 필터 <span class="mono" style="font-size:12px;color:var(--sub);font-weight:400">data/parsed/default_filters.json</span></h3><div class="dfbox" id="df">(없음)</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ -->
+  <section class="panel" id="p-flt">
+    <div class="grid2">
+      <div class="card">
+        <h3>질문: 1등급 장애의 전체 시세 전송 중단 기준은 몇 분인가?</h3>
+        <div class="bar seg" id="fbar" style="margin:6px 0 0">
+          <button class="btn sel" data-f="0">필터 없음</button>
+          <button class="btn" data-f="1">기본 필터 적용</button>
+        </div>
+        <div class="cands" id="cands">
+          <div class="cand" data-x="0"><div><b>장애등급기준 제4조</b> · 시행 2026-10-26 · <span class="pill p-rev">current</span><br><span style="font-size:13.5px">… 전체 시세 전송이 <b>3분 이상</b> 중단된 경우 …</span></div><div class="why"></div></div>
+          <div class="cand" data-x="1"><div><b>장애등급기준 제4조</b> · 시행 2025-09-01 · <span class="pill">superseded</span><br><span style="font-size:13.5px">… 전체 시세 전송이 <b>5분 이상</b> 중단된 경우 …</span></div><div class="why">status ≠ current</div></div>
+        </div>
+        <p class="note" style="margin-bottom:0">두 판 모두 색인에 남아 있습니다. 개정 전 판을 지우지 않는 이유는 "개정 전에는 어땠나" 같은 질문과 이력 인용에 쓰기 위해서입니다. 대신 기본 검색에서는 빠집니다. 본문 문장은 줄인 예시입니다.</p>
+      </div>
+      <div class="card">
+        <h3>기본 필터가 하는 일</h3>
+<pre class="box">{"effective_date": "2026-10-27",   # 기준일에 이미 시행된 조항만 (시행일 ≤ 기준일)
+ "status": "current"}             # 현행 판만 (개정 전·폐지 제외)</pre>
+        <ul style="margin:8px 0 0;padding-left:18px">
+          <li><code>update_index</code>가 이 값을 파일에 저장하고, <code>hybrid_search</code>는 모든 검색에 이 필터를 기본으로 붙입니다.</li>
+          <li>검색을 부르는 쪽이 따로 필터를 주면 그 값이 우선합니다.</li>
+          <li>그래서 RAG 그래프, 에이전틱 그래프, 멀티 에이전트의 규정 담당이 코드 수정 없이 모두 현행 조항만 찾게 됩니다.</li>
+        </ul>
+        <p class="note" style="margin-bottom:0">기준일(2026-10-27)이 지나기 전에 시행일이 미래인 개정본이 들어오면, 시행일 조건 때문에 그 개정본은 아직 검색되지 않습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ -->
+  <section class="panel" id="p-wiki">
+    <div class="grid2">
+      <div class="card">
+        <h3>ingest: Claude Code가 고친 페이지 (강사 실행, 약 3분)</h3>
+        <div class="scroll"><table>
+          <tr><th>원문</th><th>페이지</th><th>변경</th></tr>
+          <tr><td>장애등급기준 개정</td><td>장애-등급-보고</td><td>5분 → 3분 이상. 2025 판은 이력으로</td></tr>
+          <tr><td>시장운영공지기준 개정</td><td>시장운영-공지</td><td>30분 → 60분 전. 이력 추가</td></tr>
+          <tr><td>백업및복구기준 폐지</td><td>백업-복구-기준</td><td>폐지 표시, 본문은 이력 절로</td></tr>
+          <tr><td>백업및복구기준 폐지</td><td>업무연속성-재해복구</td><td>"백업및복구기준 제6조를 따른다"를 폐지·통합 사실로 정정</td></tr>
+          <tr><td>생성형AI이용지침 신규</td><td>생성형AI-이용 (새 페이지)</td><td>적용 범위, 허용 서비스, 입력 제한 등</td></tr>
+        </table></div>
+        <p class="note" style="margin-bottom:0">한 문서의 폐지가 다른 페이지(업무연속성-재해복구)에도 영향을 주는 것을 LLM이 찾아 고쳤습니다. 반대로 통합된 업무연속성계획의 새 수치는 원문이 없어 "원문 확인 필요"로 남겼습니다.</p>
+      </div>
+      <div class="card">
+        <h3>lint: 과제 1과 개정 반영 후 (강사 실행, 약 2분)</h3>
+        <div class="scroll"><table>
+          <tr><th>시점</th><th>근거 없는 문장</th><th>모순</th><th>낡은 내용</th><th>고아 페이지</th></tr>
+          <tr><td>과제 1</td><td>0</td><td>3</td><td>0</td><td>2</td></tr>
+          <tr><td>개정 반영 후</td><td>2</td><td>4</td><td>1</td><td>1</td></tr>
+        </table></div>
+        <ul style="margin:8px 0 0;padding-left:18px">
+          <li>개정을 반영하면서 오히려 근거 없는 문장, 모순, 낡은 내용이 늘었습니다. LLM이 문장을 고치는 방식은 고친 곳 주변에 새 문제를 만들 수 있습니다.</li>
+          <li>lint는 문제를 찾기만 하고 고치지 않았습니다. 모순은 어느 쪽이 맞는지 사람이 정해야 해서입니다.</li>
+          <li>이 표가 GUIDE "lint 결과 비교"를 채우는 값입니다.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤ -->
+  <section class="panel" id="p-cmp">
+    <div class="bar seg" id="wbar">
+      <button class="btn sel" data-w="pre">미리 갱신한 위키 (data/wiki_updated)</button>
+      <button class="btn" data-w="stu">직접 갱신한 위키 (--wiki wiki)</button>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="scroll"><table id="cmpt"></table></div>
+        <p class="note" style="margin-bottom:0">정답 = 현행 조항과 시행일까지 맞음. 정답(이력 함께) = 현행 판과 개정 전 판을 함께 인용. 개정 전 인용 = 조항은 맞지만 옛 판. 누락 = 정답 조항을 인용하지 못함.</p>
+      </div>
+      <div class="card">
+        <h3>읽는 법</h3>
+        <ul style="margin:0;padding-left:18px">
+          <li><b>"개정 전 인용" 0건:</b> 두 방식 모두 옛 판으로 답한 문항이 없습니다. 확인 기준 "개정 전 조항이 답에 없다"를 채웁니다.</li>
+          <li><b>U04 (폐지 문서):</b> 두 방식 모두 거부했습니다. RAG 쪽 원인은 확인했습니다. 폐지 공고의 조항 ID가 폐지 대상 문서와 겹쳐 색인에 들어가지 못했습니다(② 탭 2·4단계). 위키 쪽은 "폐지" 표시를 했는데도 거부했고, 원인은 따로 분석하지 않았습니다.</li>
+          <li><b>Q24 RAG:</b> 60일이라는 답은 맞지만 제11조 대신 부칙을 인용해 누락으로 채점됐습니다.</li>
+          <li><b>Q21 위키:</b> 미리 갱신한 위키에서는 거부, 직접 갱신한 위키에서는 정답. 위키는 누가 어떻게 갱신했느냐에 따라 결과가 달라집니다.</li>
+        </ul>
+        <p class="note" style="margin-bottom:0">질문 8건을 RAG와 위키로 각각 실행합니다(LLM 16번). RAG 쪽은 ②의 증분 색인이 먼저 돼 있어야 합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑥ -->
+  <section class="panel" id="p-run">
+    <div class="grid2">
+      <div class="card">
+        <h3>실행 (<code>lab\1028\4-3</code>에서)</h3>
+<pre class="box">python -m day2.update_index          # ② RAG 증분 색인 (LLM 없음)
+
+claude                               # ④ 위키 ingest, lint (Claude Code)
+
+python -m day2.compare_update        # ⑤ 미리 갱신한 위키로 비교
+python -m day2.compare_update --wiki wiki   # 직접 갱신한 위키로 비교</pre>
+        <p style="margin:8px 0 0">기록된 <code>update_index</code> 출력:</p>
+<pre class="box">{"before": 272, "after": 298, "added": 39, "indexed": 39,
+ "deleted": 13, "repealed_docs": ["HB-OPS-102"], "superseded": 100}</pre>
+        <p class="note" style="margin-bottom:0">자세한 준비와 출력은 같은 폴더의 <code>commands.html</code>에 있습니다.</p>
+      </div>
+      <div class="card">
+        <h3>공용 파일을 직접 바꿉니다</h3>
+        <ul style="margin:0;padding-left:18px">
+          <li><code>update_index</code>는 모든 수업이 함께 쓰는 <code>data\parsed\articles.jsonl</code>(272 → 298)과 색인 <code>lab\.chroma\</code>, 기본 필터 파일을 고칩니다.</li>
+          <li>이후 1일차 실험을 다시 돌리면 결과가 달라집니다.</li>
+          <li>같은 명령을 두 번 실행해도 이미 들어간 조항은 다시 넣지 않습니다.</li>
+        </ul>
+        <h3 style="margin-top:12px">개정 반영 전으로 되돌리기</h3>
+<pre class="box">Remove-Item C:\koscom-agent-lab-2026\lab\data\parsed\default_filters.json
+copy C:\koscom-agent-lab-2026\solutions\data\parsed\articles.jsonl C:\koscom-agent-lab-2026\lab\data\parsed\
+python -m src.retriever --rebuild</pre>
+        <p class="note" style="margin-bottom:0"><code>--rebuild</code>는 색인을 지우고 272개로 다시 만듭니다(1~2분). <code>--build</code>는 빠진 조항만 넣으므로, 되돌릴 때는 <code>--rebuild</code>를 씁니다.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(t => t.addEventListener("click", () => {
+  tabs.forEach(x => x.classList.toggle("on", x === t));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === "p-" + t.dataset.t));
+}));
+
+// ---------- ② 증분 색인 ----------
+// 문서별 칸 수는 예시. 상태: c=현행, o=개정 전, n=새로, d=삭제, h=아직 없음
+const DOCS = [
+  {k:"jang", name:"장애등급기준", sub:"HB-OPS-005 · 개정 · 15조항"},
+  {k:"gong", name:"시장운영공지기준", sub:"HB-OPS-004 · 개정 · 15조항"},
+  {k:"ai",   name:"생성형AI이용지침", sub:"HB-DEV-002 · 신규 · 9조항"},
+  {k:"bak",  name:"백업및복구기준", sub:"HB-OPS-102 · 폐지 · 13조항"},
+  {k:"pye",  name:"백업및복구기준 폐지 공고", sub:"HB-OPS-102(!) · 3조항"},
+];
+const N = {jang:[15,15], gong:[15,15], ai:[0,9], bak:[13,0], pye:[0,3]};   // [기존, 새 판] 실제 조항 수
+const STEPS = [
+  {t:"시작: 개정 반영 전", w:"articles.jsonl 272개", b:`<p>조항 파일과 색인에는 지금까지의 문서만 있습니다. 장애등급기준, 시장운영공지기준은 현재 판이 현행입니다.</p>`,
+   st:{jang:["c",null], gong:["c",null], ai:[null,"h"], bak:["c",null], pye:[null,"h"]}, c:[272,0,0,"–"], df:null},
+  {t:"새 문서 파싱", w:"parse_file(data/updates/…)", b:`<p>1-2의 <code>parse_file</code>로 PDF·DOCX를 조항 단위로 나눕니다. 이미 있는 <code>chunk_id</code>는 빼고 새 조항만 남깁니다.</p><p>새 조항 <b>39개</b> = 15 + 15 + 9.</p><p style="color:var(--bad)">폐지 공고 3조항은 여기서 빠집니다. 문서번호(HB-OPS-102)와 개정차수(1)가 폐지 대상 문서와 같아 조항 ID(<code>HB-OPS-102_r1_제1조</code>)가 겹치고, "이미 있는 조항"으로 판단되기 때문입니다.</p>`,
+   st:{jang:["c","n"], gong:["c","n"], ai:[null,"n"], bak:["c",null], pye:[null,"d"]}, c:[272,39,0,"–"], df:null},
+  {t:"개정 전 판 표시", w:"mark_status()", b:`<p>같은 문서번호에서 <b>개정 차수가 가장 높은 판만 current</b>, 나머지는 superseded로 바꿉니다. 지우지는 않습니다.</p>`,
+   st:{jang:["o","n"], gong:["o","n"], ai:[null,"n"], bak:["c",null], pye:[null,"d"]}, c:[272,39,0,100], df:null},
+  {t:"폐지 문서 삭제", w:"REPEAL_RE", b:`<p>폐지 공고 본문에서 "(HB-OPS-102) … 폐지"를 찾아, 그 문서번호의 조항 13개를 <b>지웁니다</b>.</p><p style="color:var(--bad)">코드는 폐지 공고를 근거로 남기려 했지만, 공고는 앞 단계에서 이미 빠졌습니다. 그래서 "백업및복구기준이 폐지됐다"는 근거가 색인에 하나도 없습니다(U04 실패 원인).</p>`,
+   st:{jang:["o","n"], gong:["o","n"], ai:[null,"n"], bak:["d",null], pye:[null,"d"]}, c:[298,39,13,100], df:null},
+  {t:"조항 파일 저장", w:"data/parsed/articles.jsonl", b:`<p>272 − 13 + 39 = <b>298개</b>로 다시 씁니다. 모든 수업이 함께 쓰는 파일입니다.</p>`,
+   st:{jang:["o","n"], gong:["o","n"], ai:[null,"n"], bak:["d",null], pye:[null,"d"]}, c:[298,39,13,100], df:null},
+  {t:"색인 갱신 (바뀐 것만)", w:"Chroma: delete · add · update", b:`<ul><li>색인에서 폐지 조항 13개 삭제</li><li>새 조항 39개만 임베딩해 추가 (나머지 259개는 그대로)</li><li>개정 전 판의 <code>status</code> 메타데이터를 superseded로 갱신</li></ul><p>전체를 다시 임베딩하지 않아서 빠릅니다. 이것이 "증분"입니다.</p>`,
+   st:{jang:["o","c"], gong:["o","c"], ai:[null,"c"], bak:["d",null], pye:[null,"d"]}, c:[298,39,13,100], df:null},
+  {t:"검색 기본 필터 저장", w:"default_filters.json", b:`<p>검색이 "기준일 현재 시행 중"인 조항만 찾도록 기본 필터를 파일에 저장합니다. 다음 실행에도 적용됩니다(③ 탭).</p>`,
+   st:{jang:["o","c"], gong:["o","c"], ai:[null,"c"], bak:["d",null], pye:[null,"d"]}, c:[298,39,13,100], df:'{"effective_date": "2026-10-27", "status": "current"}'},
+];
+const docs = document.getElementById("docs");
+DOCS.forEach(d => {
+  const row = document.createElement("div"); row.className = "docrow";
+  row.innerHTML = `<div class="docname">${d.name}<small>${d.sub}</small></div><div class="chips"><span class="a-old" style="display:contents"></span><span class="a-new" style="display:contents"></span></div>`;
+  const [o, n] = N[d.k];
+  const so = row.querySelector(".a-old"), sn = row.querySelector(".a-new");
+  for (let i = 0; i < o; i++) so.insertAdjacentHTML("beforeend", `<span class="ck" data-k="${d.k}" data-g="0"></span>`);
+  for (let i = 0; i < n; i++) sn.insertAdjacentHTML("beforeend", `<span class="ck hide" data-k="${d.k}" data-g="1"></span>`);
+  docs.appendChild(row);
+});
+const CLS = {c:"", o:"old", n:"new", d:"del", h:"hide"};
+let cur = 0, timer = null;
+function show(i){
+  cur = Math.max(0, Math.min(i, STEPS.length - 1));
+  const s = STEPS[cur];
+  document.querySelectorAll(".ck").forEach(ck => {
+    const st = s.st[ck.dataset.k][+ck.dataset.g];
+    ck.className = "ck" + (st ? (CLS[st] ? " " + CLS[st] : "") : " hide");
+  });
+  ["c-all","c-new","c-del","c-old"].forEach((id, j) => document.getElementById(id).textContent = s.c[j]);
+  const df = document.getElementById("df");
+  df.textContent = s.df || "(없음 — 모든 판을 검색)";
+  df.classList.toggle("hl", cur === STEPS.length - 1);
+  document.getElementById("msg").innerHTML = `<h3>${cur + 1}. ${s.t}<span class="who">${s.w}</span></h3>${s.b}`;
+  document.getElementById("stepno").textContent = `${cur + 1} / ${STEPS.length}`;
+  document.getElementById("prev").disabled = cur === 0;
+  document.getElementById("next").disabled = cur === STEPS.length - 1;
+}
+function stop(){ clearInterval(timer); timer = null; document.getElementById("play").textContent = "▶ 재생"; }
+document.getElementById("play").onclick = () => {
+  if (timer) return stop();
+  if (cur >= STEPS.length - 1) show(0);
+  document.getElementById("play").textContent = "❚❚ 멈춤";
+  timer = setInterval(() => { if (cur >= STEPS.length - 1) return stop(); show(cur + 1); }, 2400);
+};
+document.getElementById("next").onclick = () => { stop(); show(cur + 1); };
+document.getElementById("prev").onclick = () => { stop(); show(cur - 1); };
+show(0);
+
+// ---------- ③ 필터 ----------
+document.querySelectorAll("#fbar .btn").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#fbar .btn").forEach(x => x.classList.toggle("sel", x === b));
+  const on = b.dataset.f === "1";
+  document.querySelector('.cand[data-x="1"]').classList.toggle("out", on);
+});
+
+// ---------- ⑤ 비교표 ----------
+const Q = [["U01","1등급 장애의 전체 시세 전송 중단 기준"],["U02","정기 공지 게시 시점"],["U03","사내 문서를 외부 생성형 AI에 입력"],["U04","백업및복구기준 RPO는 현재도 유효한가"],
+           ["Q21","시세 전송 지연 시 참가사 통보 기준"],["Q22","참가사에 장애를 팩스로 통보"],["Q23","외부 기관 시세 조회 API 호출 한도"],["Q24","비밀번호 변경 주기"]];
+const R = {
+  pre:{rag:["정답","정답","정답","누락","정답","정답","정답","누락"], wiki:["정답","정답(이력 함께)","정답","누락","누락","정답","정답","정답"]},
+  stu:{rag:["정답","정답","정답","누락","정답","정답","정답","누락"], wiki:["정답(이력 함께)","정답(이력 함께)","정답","누락","정답","정답","정답","정답"]},
+};
+function cls(v){ return v === "누락" ? "miss" : v.includes("이력") ? "hist" : v === "정답" ? "ok" : ""; }
+function table(w){
+  document.querySelectorAll("#wbar .btn").forEach(x => x.classList.toggle("sel", x.dataset.w === w));
+  const r = R[w];
+  document.getElementById("cmpt").innerHTML = `<tr><th>id</th><th>질문</th><th>RAG</th><th>위키</th></tr>` +
+    Q.map(([id, q], i) => `<tr><td>${id}</td><td>${q}</td><td class="${cls(r.rag[i])}">${r.rag[i]}</td><td class="${cls(r.wiki[i])}">${r.wiki[i]}</td></tr>`).join("") +
+    `<tr><td colspan="2"><b>개정 전 인용</b></td><td>0</td><td>0</td></tr>`;
+}
+document.querySelectorAll("#wbar .btn").forEach(b => b.onclick = () => table(b.dataset.w));
+table("pre");
+</script>
+</body>
+</html>
