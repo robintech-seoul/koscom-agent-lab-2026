@@ -240,7 +240,8 @@ pre.cmd{background:#1d1d1f;color:#f4f4f2;border-radius:8px;padding:10px 12px;fon
         <div class="more"><dl class="kv">
           <dt>하는 일</dt><dd>공시 목록과 원문을 조회해 근거를 모읍니다.</dd>
           <dt>도구</dt><dd>3-1 MCP 도구 <span class="tool">search_disclosures</span><span class="tool">get_disclosure_document</span> 최대 5회</dd>
-          <dt>출력</dt><dd>요약 1개 + 요약에 실제로 적은 접수번호의 공시만 evidence로</dd></dl></div></div>
+          <dt>출력</dt><dd>요약 1개 + 요약에 적은 공시와 원문을 조회한 공시를 evidence로</dd>
+          <dt>한도</dt><dd>출력 16,000토큰(생각 포함). 공시 원문이 많으면 생각이 길어지기 때문</dd></dl></div></div>
       <div class="role r-wri"><h3>작성자</h3><div class="sm">writer · LLM 1번</div><div class="hint">누르면 펼침</div>
         <div class="more"><dl class="kv">
           <dt>하는 일</dt><dd>evidence만 근거로 최종 답을 씁니다. <b>답을 쓰는 곳은 여기 하나</b>입니다.</dd>
@@ -353,6 +354,7 @@ pre.cmd{background:#1d1d1f;color:#f4f4f2;border-radius:8px;padding:10px 12px;fon
           <li>질문이 "공시 정보를 보여 달라"면 LLM이 목록만으로 충분하다고 보고 본문 도구를 부르지 않을 수 있습니다. "원문을 읽고 요약해" 처럼 본문이 필요하다고 적습니다.</li>
           <li>실행 출력의 <code>도구: disclosure …</code> 줄에서 <code>get_disclosure_document</code>가 불렸는지 확인합니다.</li>
           <li>원문은 앞부분 4,000자까지만 가져오고, 작성자에게는 그중 1,500자까지만 근거로 넘어갑니다.</li>
+          <li>원문이 많은 실제 공시에서 답이 비거나 "문서에 없음"이 나오던 문제는 고쳤습니다. 원인과 과정은 같은 폴더의 <code>debug_report.html</code>에 있습니다.</li>
           <li>본문만 바로 보려면: <span class="mono">python ..\3-1\day2\dart_cli.py document --rcept-no 접수번호</span></li>
         </ul>
       </div>
