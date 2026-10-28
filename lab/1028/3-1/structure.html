@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3-1 코드 구조</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#ffffff; --card:#ffffff; --ink:#1d1d1f; --sub:#5f6368; --line:#d9d9d6;
+  --data:#eef4ee; --data-b:#9cbf9c;
+  --core:#eef1f8; --core-b:#97a6c9;
+  --a:#fbf1e6; --a-b:#d9a46a;
+  --b:#efeafa; --b-b:#a594d6;
+  --loop:#f3f3f1; --loop-b:#a9a9a4;
+  --run:#e9f3f6; --run-b:#86b6c4;
+  --code:#f4f4f2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;line-height:1.55;font-size:15px}
+.wrap{max-width:1060px;margin:0 auto;padding:28px 16px 60px}
+.eyebrow{font-size:13px;color:var(--sub);letter-spacing:.02em}
+h1{font-size:26px;margin:6px 0 8px}
+h2{font-size:19px;margin:36px 0 12px}
+.lead{color:var(--sub);margin:0 0 6px}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.88em}
+code{background:var(--code);padding:1px 5px;border-radius:4px}
+
+.blk{border:1.5px solid var(--line);border-radius:10px;background:var(--card);padding:12px 14px}
+.blk h3{margin:0 0 2px;font-size:15px}
+.blk .file{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--sub);margin-bottom:6px}
+.blk ul{margin:6px 0 0;padding-left:18px}
+.blk li{margin:2px 0}
+.tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--sub);margin-left:6px;vertical-align:2px}
+.data{background:var(--data);border-color:var(--data-b)}
+.core{background:var(--core);border-color:var(--core-b)}
+.a{background:var(--a);border-color:var(--a-b)}
+.b{background:var(--b);border-color:var(--b-b)}
+.loop{background:var(--loop);border-color:var(--loop-b)}
+.run{background:var(--run);border-color:var(--run-b)}
+
+.row{display:grid;gap:12px}
+.r3{grid-template-columns:repeat(3,1fr)}
+.r2{grid-template-columns:1fr 1fr}
+.arrow{text-align:center;color:var(--sub);font-size:13px;margin:6px 0;line-height:1.3}
+.arrow b{display:block;font-size:20px;line-height:1}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lane{border:1.5px dashed var(--line);border-radius:12px;padding:10px}
+.lane-t{font-weight:700;font-size:14px;margin:0 0 8px}
+.side{display:grid;grid-template-columns:1fr 220px;gap:12px;align-items:start}
+
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
+.node{border:1.5px solid var(--loop-b);background:var(--card);border-radius:999px;padding:3px 12px;font-size:13px;font-family:"IBM Plex Mono",monospace}
+.node.end{border-style:dashed}
+.flow .to{color:var(--sub)}
+
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--card)}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--code);font-weight:600}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin:12px 0 0}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1.5px solid}
+.l-data::before{background:var(--data);border-color:var(--data-b)!important}
+.l-core::before{background:var(--core);border-color:var(--core-b)!important}
+.l-a::before{background:var(--a);border-color:var(--a-b)!important}
+.l-b::before{background:var(--b);border-color:var(--b-b)!important}
+.l-loop::before{background:var(--loop);border-color:var(--loop-b)!important}
+.l-run::before{background:var(--run);border-color:var(--run-b)!important}
+.note{border-left:3px solid var(--line);padding:4px 12px;color:var(--sub);margin:10px 0}
+.scroll{overflow-x:auto}
+
+@media (max-width:760px){
+  .r3,.r2,.split,.side{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">KOSCOM 과정1 · 1028 / 3-1</div>
+  <h1>3-1 코드 구조: 같은 기능, 두 가지 연결 방식</h1>
+  <p class="lead">공시 조회 기능은 <code>dart_cli.py</code>의 함수 두 개(<code>search</code>, <code>document</code>)뿐입니다. 이 기능을 에이전트에 붙이는 방법만 A(CLI 스크립트)와 B(MCP 서버)로 다르게 하고, 같은 질문 10건으로 비교합니다.</p>
+  <div class="legend">
+    <span class="l-data">데이터</span><span class="l-core">공시 조회 기능</span><span class="l-a">A: CLI 방식</span><span class="l-b">B: MCP 방식</span><span class="l-loop">공용 에이전트 루프</span><span class="l-run">비교 실행</span>
+  </div>
+
+  <h2>전체 그림</h2>
+
+  <!-- 데이터 -->
+  <div class="row r3">
+    <div class="blk data"><h3>회사 목록</h3><div class="file">data/companies.json</div>"A사", "B사"를 회사명과 DART 회사 코드로 바꿉니다. 둘 다 가상 회사입니다.</div>
+    <div class="blk data"><h3>녹화 응답</h3><div class="file">data/dart_cache/</div>공시 목록과 원문을 미리 저장해 둔 파일. 키가 없거나 가상 회사면 이것을 씁니다.</div>
+    <div class="blk data"><h3>OpenDART API <span class="tag">선택</span></h3><div class="file">opendart.fss.or.kr</div><code>.env</code>에 <code>DART_API_KEY</code>가 있고 실제 회사일 때만 부릅니다.</div>
+  </div>
+  <div class="arrow"><b>↑</b>읽기</div>
+
+  <!-- 핵심 기능 -->
+  <div class="blk core">
+    <h3>공시 조회 기능 <span class="tag">실습 ①</span></h3>
+    <div class="file">day2/dart_cli.py</div>
+    <div class="row r3">
+      <div><code>search(corp, days)</code><br>회사의 최근 공시 목록. 항목마다 제목(<code>report_nm</code>), 접수번호(<code>rcept_no</code>), 제출일(<code>rcept_dt</code>)</div>
+      <div><code>document(rcept_no)</code><br>공시 원문 텍스트 앞부분(4,000자)</div>
+      <div><code>main()</code><br>명령줄 서브커맨드 <code>search</code> / <code>document</code>를 받아 결과를 JSON으로 화면(stdout)에 출력</div>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:6px">
+    <div class="arrow"><b>↑</b>A는 <b style="display:inline;font-size:inherit">프로그램 실행</b>으로 부른다<br>(<span class="mono">python day2/dart_cli.py search ...</span>)</div>
+    <div class="arrow"><b>↑</b>B는 <b style="display:inline;font-size:inherit">함수 import</b>로 부른다<br>(<span class="mono">import dart_cli</span>)</div>
+  </div>
+
+  <!-- 두 방식 -->
+  <div class="split">
+    <div class="lane">
+      <p class="lane-t">A. CLI 스크립트 방식</p>
+      <div class="blk a">
+        <h3>셸 실행 도구 <code>run_shell(command)</code></h3>
+        <div class="file">day2/compare_cli_mcp.py 안</div>
+        <ul>
+          <li>에이전트가 명령 문자열을 만들어 넘기면 새 프로세스로 실행하고 출력(JSON)을 돌려줍니다.</li>
+          <li>사용법은 <b>시스템 프롬프트</b>에 글로 적어 줍니다(<code>CLI_USAGE</code>).</li>
+          <li>도구 정의는 "명령 하나 받기"뿐이라 짧습니다.</li>
+          <li>셸은 어떤 명령이든 실행할 수 있으므로, <code>python day2/dart_cli.py</code>로 시작하는 명령만 허용합니다.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="lane">
+      <p class="lane-t">B. MCP 서버 방식</p>
+      <div class="blk b">
+        <h3>MCP 서버 <code>FastMCP("dart")</code> <span class="tag">실습 ①</span></h3>
+        <div class="file">day2/dart_mcp.py</div>
+        <ul>
+          <li>도구 2개: <code>search_disclosures</code>, <code>get_disclosure_document</code></li>
+          <li>함수의 설명문(docstring)이 <b>도구 설명</b>, 타입 표시가 <b>입력 스키마</b>가 됩니다.</li>
+          <li>stdio(표준 입출력)로 클라이언트와 대화합니다.</li>
+        </ul>
+      </div>
+      <div class="arrow"><b>↕</b>stdio로 연결, 도구 목록을 서버에 물어서 받아 옴</div>
+      <div class="side">
+        <div class="blk b">
+          <h3>MCP 클라이언트 <code>mcp_tools()</code></h3>
+          <div class="file">day2/compare_cli_mcp.py 안</div>
+          <code>langchain-mcp-adapters</code>의 <code>MultiServerMCPClient</code>가 서버를 띄우고, 서버의 도구를 LangChain 도구로 바꿔 줍니다.
+        </div>
+        <div class="blk b" style="border-style:dashed">
+          <h3>Claude Desktop <span class="tag">강사 시연</span></h3>
+          같은 <code>dart_mcp.py</code>를 코드 수정 없이 연결합니다(재사용성).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:6px">
+    <div class="arrow"><b>↓</b>도구 1개: <span class="mono">[run_shell]</span></div>
+    <div class="arrow"><b>↓</b>도구 2개: <span class="mono">[search_disclosures, get_disclosure_document]</span></div>
+  </div>
+
+  <!-- 공용 루프 -->
+  <div class="blk loop">
+    <h3>공용 에이전트 루프 <code>build_tool_agent(tools, system)</code> <span class="tag">실습 ②</span></h3>
+    <div class="file">src/agent_loop.py · 3-2 이후에도 같이 씁니다</div>
+    <div class="flow">
+      <span class="node">START</span><span class="to">→</span>
+      <span class="node">agent</span><span class="to">⇄</span>
+      <span class="node">tools</span><span class="to">(최대 6회)</span><span class="to">→</span>
+      <span class="node end">END</span>
+    </div>
+    <ul>
+      <li><b>agent:</b> LLM(Haiku 5.5)이 질문과 도구 정의를 보고 도구를 부를지, 답을 낼지 정합니다.</li>
+      <li><b>tools:</b> 고른 도구를 실행하고 결과를 대화에 붙입니다. 결과는 출력 필터(<code>src/tools.py</code>의 <code>filter_output</code>, 2-3)를 거칩니다.</li>
+      <li>도구 호출마다 도구 이름, 인자, 결과 길이, 오류 여부를 <code>tool_log</code>에 남깁니다. 비교표의 "도구 호출 수", "인자 오류 수"가 여기서 나옵니다.</li>
+      <li>A와 B는 이 루프에 넣는 <b>도구 목록과 시스템 프롬프트만</b> 다릅니다.</li>
+    </ul>
+  </div>
+  <div class="arrow"><b>↓</b></div>
+
+  <!-- 비교 실행 -->
+  <div class="blk run">
+    <h3>비교 실행 <code>python -m day2.compare_cli_mcp</code> <span class="tag">실습 ②</span></h3>
+    <div class="file">day2/compare_cli_mcp.py</div>
+    <div class="flow">
+      <span class="node">eval/sets/dart.jsonl 10건</span><span class="to">→</span>
+      <span class="node">에이전트 A 10번</span><span class="to">+</span>
+      <span class="node">에이전트 B 10번</span><span class="to">→</span>
+      <span class="node">채점</span><span class="to">→</span>
+      <span class="node">비교표</span><span class="to">+</span>
+      <span class="node">eval/results/cli_vs_mcp_r1.jsonl</span>
+    </div>
+    <ul>
+      <li><b>맞는 답:</b> 정답 공시의 접수번호(<code>gold_rcept</code>)가 답에 모두 있고, 금지 문구(<code>must_not_contain</code>)가 없으면 맞음</li>
+      <li><b>도구 정의 토큰:</b> 도구 설명과 입력 스키마를 모델에 넣을 때 드는 토큰(근사치)</li>
+    </ul>
+  </div>
+
+  <h2>파일별 역할</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>파일</th><th>역할</th><th>누가 부르나</th><th>실습</th></tr>
+    <tr><td><code>day2/dart_cli.py</code></td><td>공시 조회 기능(<code>search</code>, <code>document</code>)과 명령줄 실행</td><td>A: 셸 도구가 프로그램으로 실행 / B: MCP 서버가 import</td><td>①</td></tr>
+    <tr><td><code>day2/dart_mcp.py</code></td><td>같은 기능을 MCP 도구 2개로 내보내는 서버</td><td>MCP 클라이언트(<code>mcp_tools</code>), Claude Desktop</td><td>①</td></tr>
+    <tr><td><code>src/agent_loop.py</code></td><td>도구를 반복 호출하는 공용 에이전트 루프</td><td><code>compare_cli_mcp.py</code>, 3-2 이후 에이전트</td><td>②</td></tr>
+    <tr><td><code>day2/compare_cli_mcp.py</code></td><td>셸 도구, MCP 클라이언트, 두 에이전트 실행, 채점, 비교표</td><td>수강생이 직접 실행</td><td>②</td></tr>
+  </table>
+  </div>
+
+  <h2>A와 B는 어디가 다른가</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>항목</th><th>A. CLI 스크립트</th><th>B. MCP 서버</th></tr>
+    <tr><td>에이전트가 아는 방법</td><td>시스템 프롬프트에 적은 사용법(글)</td><td>서버가 알려 주는 도구 설명과 입력 스키마</td></tr>
+    <tr><td>도구 수</td><td>1개(셸 명령 실행)</td><td>2개(기능마다 하나)</td></tr>
+    <tr><td>인자 확인</td><td>명령 문자열이라 형식 오류를 실행 후에야 알 수 있음</td><td>입력 스키마로 이름과 타입이 정해져 있음</td></tr>
+    <tr><td>재사용성</td><td>이 에이전트 코드 안에서만 씀</td><td>다른 MCP 앱(Claude Desktop 등)에 그대로 연결</td></tr>
+    <tr><td>권한 범위</td><td>셸이라 어떤 명령이든 가능 → 허용 명령을 직접 막아야 함</td><td>서버가 내보낸 도구 2개만 호출 가능</td></tr>
+  </table>
+  </div>
+  <p class="note">기록된 비교 결과(강사 실행): 도구 정의 토큰 A 91 / B 315, 맞는 답 A 9/10 / B 9/10, 인자 오류 둘 다 0, 평균 지연 A 5.3초 / B 6.4초. 자세한 명령은 같은 폴더의 <code>commands.html</code>에 있습니다.</p>
+</div>
+</body>
+</html>
