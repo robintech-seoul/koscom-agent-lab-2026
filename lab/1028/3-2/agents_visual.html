@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3-2 멀티 에이전트 보기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#ffffff; --card:#ffffff; --ink:#1d1d1f; --sub:#5f6368; --line:#d9d9d6; --soft:#fafaf8;
+  --sup:#eef1f8; --sup-b:#7f92c2;
+  --reg:#eef4ee; --reg-b:#7fae80;
+  --dis:#efeafa; --dis-b:#9583cf;
+  --wri:#fbf1e6; --wri-b:#d0965a;
+  --ver:#fbecec; --ver-b:#cc7b7b;
+  --off:#f5f5f3; --off-b:#c4c4bf;
+  --st:#e9f3f6; --st-b:#6fa8b8;
+  --hl:#1d1d1f; --code:#f4f4f2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;line-height:1.55;font-size:15px}
+.wrap{max-width:1120px;margin:0 auto;padding:24px 16px 60px}
+.eyebrow{font-size:13px;color:var(--sub)}
+h1{font-size:25px;margin:4px 0 6px}
+.lead{color:var(--sub);margin:0 0 16px}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.88em}
+code{background:var(--code);padding:1px 5px;border-radius:4px}
+
+/* 탭 */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1.5px solid var(--line);margin-bottom:18px}
+.tab{border:1.5px solid var(--line);border-bottom:none;background:var(--soft);padding:8px 14px;border-radius:10px 10px 0 0;cursor:pointer;font:inherit;font-size:14px;color:var(--sub);margin-bottom:-1.5px}
+.tab.on{background:var(--bg);color:var(--ink);font-weight:600;border-bottom:1.5px solid var(--bg)}
+.panel{display:none}
+.panel.on{display:block}
+
+/* 흐름 재생 */
+.play-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.btn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn:disabled{opacity:.35;cursor:default}
+.chk{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--sub);margin-left:6px}
+.stepno{font-size:13px;color:var(--sub);margin-left:auto}
+.stage{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+.board{position:relative;border:1.5px solid var(--line);border-radius:14px;background:var(--soft);padding:16px 12px;min-height:520px}
+.rowx{display:flex;justify-content:center;gap:14px;margin:0 0 30px;flex-wrap:nowrap}
+.nd{position:relative;border:1.5px solid var(--line);border-radius:10px;background:#fff;padding:7px 10px;min-width:104px;text-align:center;font-size:13px;transition:transform .25s, box-shadow .25s, opacity .25s}
+.nd b{display:block;font-size:13.5px}
+.nd small{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--sub)}
+.nd.pill{border-radius:999px;min-width:70px;font-family:"IBM Plex Mono",monospace}
+.nd.sup{background:var(--sup);border-color:var(--sup-b)}
+.nd.reg{background:var(--reg);border-color:var(--reg-b)}
+.nd.dis{background:var(--dis);border-color:var(--dis-b)}
+.nd.wri{background:var(--wri);border-color:var(--wri-b)}
+.nd.ver{background:var(--ver);border-color:var(--ver-b)}
+.nd.off{background:var(--off);border-color:var(--off-b);border-style:dashed;color:var(--sub)}
+.nd.active{transform:scale(1.08);box-shadow:0 0 0 3px var(--hl);z-index:2}
+.nd.done{opacity:.55}
+.nd .badge{position:absolute;top:-9px;right:-8px;background:var(--ink);color:#fff;border-radius:999px;font-size:11px;padding:0 6px;display:none}
+.nd.active .badge{display:block}
+.grp{border:1.5px dashed var(--line);border-radius:12px;padding:16px 10px 10px;position:relative;display:flex;gap:14px;justify-content:center;margin:0 auto 30px;width:fit-content}
+.grp-t{position:absolute;top:-10px;left:12px;background:var(--soft);padding:0 6px;font-size:12px;color:var(--sub)}
+svg.edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+svg.edges path{fill:none;stroke:#b9b9b4;stroke-width:1.5}
+svg.edges path.hot{stroke:var(--ink);stroke-width:2.5}
+svg.edges path.back{stroke-dasharray:5 4}
+.token{position:absolute;width:16px;height:16px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 4px rgba(29,29,31,.15);z-index:3;transition:left .7s ease, top .7s ease, opacity .3s;opacity:0;pointer-events:none}
+.side{display:flex;flex-direction:column;gap:12px}
+.card{border:1.5px solid var(--line);border-radius:12px;background:#fff;padding:12px 14px}
+.card h3{margin:0 0 6px;font-size:15px}
+.msg h3 .who{font-size:12px;color:var(--sub);font-weight:400;margin-left:6px}
+.msg p{margin:4px 0}
+.msg ul{margin:4px 0;padding-left:18px}
+.tool{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--code);border-radius:6px;padding:2px 7px;margin:2px 4px 2px 0}
+pre.state{margin:0;background:var(--code);border-radius:8px;padding:10px;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+pre.state .new{background:#fff2b8}
+.ex{font-size:12.5px;color:var(--sub);margin-top:8px}
+
+/* 역할 */
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.role{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;transition:box-shadow .2s}
+.role:hover{box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.role h3{margin:0;font-size:15px}
+.role .sm{font-size:12.5px;color:var(--sub);font-family:"IBM Plex Mono",monospace}
+.role .more{display:none;margin-top:8px;font-size:14px}
+.role.open .more{display:block}
+.role .hint{font-size:12px;color:var(--sub);margin-top:6px}
+.role.open .hint{display:none}
+.kv{display:grid;grid-template-columns:70px 1fr;gap:3px 8px}
+.kv dt{color:var(--sub)}
+.kv dd{margin:0}
+.r-sup{background:var(--sup);border-color:var(--sup-b)}
+.r-reg{background:var(--reg);border-color:var(--reg-b)}
+.r-dis{background:var(--dis);border-color:var(--dis-b)}
+.r-wri{background:var(--wri);border-color:var(--wri-b)}
+.r-ver{background:var(--ver);border-color:var(--ver-b)}
+.r-off{background:var(--off);border-color:var(--off-b);border-style:dashed}
+
+/* 소통 (시퀀스) */
+.seq{position:relative;border:1.5px solid var(--line);border-radius:14px;background:var(--soft);padding:12px 8px 16px;overflow-x:auto}
+.seq-in{position:relative;min-width:760px}
+.heads{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;position:relative;z-index:1}
+.head{text-align:center;border:1.5px solid var(--line);border-radius:10px;padding:6px 4px;font-size:13px;font-weight:600;background:#fff}
+.lifelines{position:absolute;top:44px;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;pointer-events:none}
+.lifelines div{border-left:1.5px dashed #c9c9c4;margin-left:50%}
+.msgs{position:relative;margin-top:12px}
+.m{position:relative;height:50px;opacity:.15;transition:opacity .4s}
+.m.show{opacity:1}
+.m .line{position:absolute;top:26px;height:2px;background:var(--ink)}
+.m .line::after{content:"";position:absolute;top:-5px;border:6px solid transparent}
+.m.r .line::after{right:-2px;border-left-color:var(--ink);border-right:none}
+.m.l .line::after{left:-2px;border-right-color:var(--ink);border-left:none}
+.m.back .line{background:repeating-linear-gradient(90deg,var(--ver-b) 0 6px,transparent 6px 10px)}
+.m.back.l .line::after{border-right-color:var(--ver-b)}
+.m .lbl{position:absolute;top:2px;font-size:12.5px;white-space:nowrap;background:var(--soft);padding:0 4px}
+.m .lbl b{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500}
+.self .box{position:absolute;top:8px;border:1.5px solid var(--line);background:#fff;border-radius:8px;font-size:12px;padding:3px 8px;white-space:nowrap}
+
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--code);font-weight:600}
+.scroll{overflow-x:auto}
+.note{border-left:3px solid var(--line);padding:4px 12px;color:var(--sub);margin:12px 0}
+
+/* state 탭 */
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.slot{border:1.5px solid var(--st-b);background:var(--st);border-radius:10px;padding:10px 12px}
+.slot h4{margin:0;font-family:"IBM Plex Mono",monospace;font-size:13.5px}
+.slot .w{font-size:12.5px;color:var(--sub)}
+.slot.acc{border-width:2.5px}
+.slot .acc-t{font-size:11.5px;background:#fff;border-radius:999px;padding:0 7px;border:1px solid var(--st-b);margin-left:4px}
+.evs{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.ev{border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;background:#fff;min-width:220px;flex:1;opacity:0;transform:translateY(8px);transition:opacity .4s, transform .4s}
+.ev.in{opacity:1;transform:none}
+.ev.r{border-color:var(--reg-b);background:var(--reg)}
+.ev.d{border-color:var(--dis-b);background:var(--dis)}
+
+/* 비교 */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bar-row{display:grid;grid-template-columns:120px 1fr 70px;align-items:center;gap:8px;margin:6px 0;font-size:13.5px}
+.bar{height:16px;border-radius:999px;background:#ececea;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:999px;transition:width 1s ease}
+.bar i.s{background:#9aa0a6}
+.bar i.m{background:var(--ink)}
+.metric{margin-bottom:14px}
+.metric h4{margin:0 0 2px;font-size:14px}
+
+/* 직접 질문 탭 */
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+pre.cmd{background:#1d1d1f;color:#f4f4f2;border-radius:8px;padding:10px 12px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;white-space:pre-wrap;margin:6px 0}
+
+@media (max-width:860px){
+  .stage,.cmp,.qa{grid-template-columns:1fr}
+  .roles{grid-template-columns:1fr 1fr}
+  .slots{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+  .roles,.slots{grid-template-columns:1fr}
+  .rowx{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">KOSCOM 과정1 · 1028 / 3-2 · <code>day2/agents.py</code></div>
+  <h1>3-2 멀티 에이전트, 움직이는 그림으로 보기</h1>
+  <p class="lead">감독자가 질문을 나누고, 규정 담당과 공시 담당이 근거를 모으고, 작성자가 답을 쓰고, 검증자가 인용을 확인합니다. 탭을 눌러 하나씩 봅니다.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-t="flow">① 흐름 재생</button>
+    <button class="tab" data-t="roles">② 역할</button>
+    <button class="tab" data-t="comm">③ 소통 방식</button>
+    <button class="tab" data-t="state">④ 공유 state</button>
+    <button class="tab" data-t="cmp">⑤ 단일 vs 멀티</button>
+    <button class="tab" data-t="real">⑥ 실제 질문 해 보기</button>
+  </div>
+
+  <!-- ① 흐름 재생 -->
+  <section class="panel on" id="p-flow">
+    <div class="play-bar">
+      <button class="btn" id="play">▶ 재생</button>
+      <button class="btn ghost" id="prev">◀ 이전</button>
+      <button class="btn ghost" id="next">다음 ▶</button>
+      <button class="btn ghost" id="reset">처음으로</button>
+      <label class="chk"><input type="checkbox" id="failmode"> 검증 실패 경우로 보기</label>
+      <span class="stepno" id="stepno"></span>
+    </div>
+    <div class="stage">
+      <div class="board" id="board">
+        <svg class="edges" id="edges"></svg>
+        <div class="rowx">
+          <div class="nd pill" id="n-start">START</div>
+          <div class="nd sup" id="n-sup"><span class="badge">실행 중</span><b>감독자</b><small>supervisor</small></div>
+        </div>
+        <div class="grp">
+          <span class="grp-t">조사 서브에이전트 · 3-2는 차례로 실행</span>
+          <div class="nd reg" id="n-reg"><span class="badge">실행 중</span><b>규정 담당</b><small>regulation</small></div>
+          <div class="nd dis" id="n-dis"><span class="badge">실행 중</span><b>공시 담당</b><small>disclosure</small></div>
+          <div class="nd off" id="n-not"><b>공지 담당</b><small>과제 2</small></div>
+        </div>
+        <div class="rowx">
+          <div class="nd" id="n-col"><span class="badge">실행 중</span><b>모으기</b><small>collect</small></div>
+          <div class="nd wri" id="n-wri"><span class="badge">실행 중</span><b>작성자</b><small>writer</small></div>
+          <div class="nd ver" id="n-ver"><span class="badge">실행 중</span><b>검증자</b><small>verifier</small></div>
+        </div>
+        <div class="rowx">
+          <div class="nd off" id="n-app"><span class="badge">통과</span><b>승인</b><small>4-2</small></div>
+          <div class="nd off" id="n-mask"><span class="badge">통과</span><b>마스킹</b><small>4-2</small></div>
+          <div class="nd off" id="n-aud"><span class="badge">통과</span><b>감사 로그</b><small>4-2</small></div>
+          <div class="nd pill" id="n-end">END</div>
+        </div>
+        <div class="token" id="token"></div>
+      </div>
+      <div class="side">
+        <div class="card msg" id="msg"></div>
+        <div class="card">
+          <h3>공유 state <span class="mono" style="font-size:12px;color:var(--sub);font-weight:400">노란색 = 이번 단계에서 바뀐 곳</span></h3>
+          <pre class="state" id="statebox"></pre>
+          <div class="ex">질문은 기본 질문(<code>python -m day2.agents</code>)입니다. 공시 값은 녹화 응답(가상 회사 A사)이고, 하위 질문과 규정 조항 번호는 흐름을 보여 주기 위한 예시입니다.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ② 역할 -->
+  <section class="panel" id="p-roles">
+    <p class="lead">카드를 누르면 자세한 내용이 펼쳐집니다.</p>
+    <div class="roles">
+      <div class="role r-sup"><h3>감독자</h3><div class="sm">supervisor · LLM 1번</div><div class="hint">누르면 펼침</div>
+        <div class="more"><dl class="kv">
+          <dt>하는 일</dt><dd>질문을 담당별 하위 질문으로 나눕니다. 직접 조사하지 않습니다.</dd>
+          <dt>도구</dt><dd>없음</dd>
+          <dt>출력</dt><dd>구조화 출력 <code>Plan</code> → <code>tasks</code></dd>
+          <dt>규칙</dt><dd>규정 담당은 빠져도 <b>항상</b> 원래 질문으로 부릅니다. 답의 근거는 사내 규정이기 때문입니다.</dd></dl></div></div>
+      <div class="role r-reg"><h3>규정 담당</h3><div class="sm">regulation · 서브그래프</div><div class="hint">누르면 펼침</div>
+        <div class="more"><dl class="kv">
+          <dt>하는 일</dt><dd>1일차 <code>graph_agentic</code>(2-3)을 통째로 실행해 사내 규정에서 답을 찾습니다.</dd>
+          <dt>도구</dt><dd><span class="tool">hybrid_search</span><span class="tool">grep</span><span class="tool">read_file</span> 최대 8회</dd>
+          <dt>출력</dt><dd>요약 1개 + 인용한 조항의 원문을 evidence로</dd></dl></div></div>
+      <div class="role r-dis"><h3>공시 담당</h3><div class="sm">disclosure · 도구 에이전트</div><div class="hint">누르면 펼침</div>
+        <div class="more"><dl class="kv">
+          <dt>하는 일</dt><dd>공시 목록과 원문을 조회해 근거를 모읍니다.</dd>
+          <dt>도구</dt><dd>3-1 MCP 도구 <span class="tool">search_disclosures</span><span class="tool">get_disclosure_document</span> 최대 5회</dd>
+          <dt>출력</dt><dd>요약 1개 + 요약에 실제로 적은 접수번호의 공시만 evidence로</dd></dl></div></div>
+      <div class="role r-wri"><h3>작성자</h3><div class="sm">writer · LLM 1번</div><div class="hint">누르면 펼침</div>
+        <div class="more"><dl class="kv">
+          <dt>하는 일</dt><dd>evidence만 근거로 최종 답을 씁니다. <b>답을 쓰는 곳은 여기 하나</b>입니다.</dd>
+          <dt>출력</dt><dd><code>Answer</code>: answer, citations, sufficient</dd>
+          <dt>규칙</dt><dd>규정 우선. 공시는 접수번호·제출일 함께. 충돌하면 둘 다 제시. 근거가 없으면 거부.</dd></dl></div></div>
+      <div class="role r-ver"><h3>검증자</h3><div class="sm">verifier · LLM 없음(규칙)</div><div class="hint">누르면 펼침</div>
+        <div class="more"><dl class="kv">
+          <dt>확인</dt><dd>① 조항이 원문에 있는가<br>② 현행 시행일 판인가<br>③ 역할이 볼 수 있는 등급인가<br>④ 공시 접수번호가 실제로 조회됐는가</dd>
+          <dt>실패</dt><dd>지적 앞에 붙은 담당 이름(<code>regulation:</code> 등)으로 그 담당에게만 되돌림, 최대 1회. 그래도 남으면 <code>drop_bad</code>가 그 인용을 뺍니다.</dd></dl></div></div>
+      <div class="role r-off"><h3>뒤 수업에서 켜지는 것</h3><div class="sm">3-3 · 4-2 · 과제 2</div><div class="hint">누르면 펼침</div>
+        <div class="more"><ul style="margin:0;padding-left:18px">
+          <li><b>3-3:</b> 담당 동시 실행(<code>PARALLEL</code>), 같은 근거 중복 제거(<code>DEDUPE</code>)</li>
+          <li><b>4-2:</b> <code>guard.py</code> → 권한, 인젝션 차단, 사람 승인, 마스킹, 감사 로그</li>
+          <li><b>과제 2:</b> 공지 담당 추가</li></ul></div></div>
+    </div>
+  </section>
+
+  <!-- ③ 소통 방식 -->
+  <section class="panel" id="p-comm">
+    <p class="lead">에이전트끼리 직접 대화하지 않습니다. 오가는 것은 아래 메시지뿐이고, 모두 공유 state를 거칩니다. <button class="btn ghost" id="seqplay" style="margin-left:6px">▶ 순서대로 보기</button></p>
+    <div class="seq"><div class="seq-in" id="seqin">
+      <div class="heads">
+        <div class="head">공유 state</div><div class="head" style="background:var(--sup)">감독자</div><div class="head" style="background:var(--reg)">규정 담당</div><div class="head" style="background:var(--dis)">공시 담당</div><div class="head" style="background:var(--wri)">작성자</div><div class="head" style="background:var(--ver)">검증자</div>
+      </div>
+      <div class="lifelines"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+      <div class="msgs" id="msgs"></div>
+    </div></div>
+    <div class="scroll" style="margin-top:14px">
+    <table>
+      <tr><th>방향</th><th>보내는 것</th><th>방법</th></tr>
+      <tr><td>감독자 → 담당</td><td>하위 질문, 역할, 검증자 지적</td><td><code>Send(담당, {...})</code>. 담당은 전체 state가 아니라 이것만 받습니다.</td></tr>
+      <tr><td>담당 → 작성자</td><td>요약과 evidence만</td><td>state에 이어 붙임. 담당 내부 대화와 도구 결과 전체는 넘기지 않고 도구 호출 기록만 남깁니다.</td></tr>
+      <tr><td>작성자 → 검증자</td><td>답과 인용</td><td>state에 씀</td></tr>
+      <tr><td>검증자 → 담당</td><td>지적 내용</td><td>지적이 붙은 담당에게만 다시 <code>Send</code>. 질문 뒤에 <span class="mono">(검증자 지적: …)</span>이 붙습니다.</td></tr>
+    </table>
+    </div>
+  </section>
+
+  <!-- ④ 공유 state -->
+  <section class="panel" id="p-state">
+    <p class="lead">그래프가 들고 다니는 딕셔너리입니다. 굵은 테두리는 <b>누적 항목</b>으로, 여러 담당이 쓴 것이 덮어쓰이지 않고 이어 붙습니다(<code>operator.add</code>).</p>
+    <div class="slots">
+      <div class="slot"><h4>question · role</h4><div class="w">입력</div></div>
+      <div class="slot"><h4>tasks</h4><div class="w">감독자가 씀</div></div>
+      <div class="slot acc"><h4>summaries<span class="acc-t">누적</span></h4><div class="w">각 담당</div></div>
+      <div class="slot acc"><h4>evidence<span class="acc-t">누적</span></h4><div class="w">각 담당</div></div>
+      <div class="slot acc"><h4>tool_log<span class="acc-t">누적</span></h4><div class="w">각 담당</div></div>
+      <div class="slot"><h4>answer · citations</h4><div class="w">작성자</div></div>
+      <div class="slot"><h4>verify_issues · retries</h4><div class="w">검증자</div></div>
+      <div class="slot"><h4>feedback</h4><div class="w">검증자 → 담당</div></div>
+    </div>
+    <h3 style="margin:22px 0 4px;font-size:16px">evidence가 쌓이는 모습 <button class="btn ghost" id="evplay" style="margin-left:6px">▶ 쌓기</button></h3>
+    <p class="lead" style="margin:0">규정이든 공시든 같은 모양이라, 작성자와 검증자가 한 가지 방식으로 다룹니다.</p>
+    <div class="evs" id="evs">
+      <div class="ev r"><b>regulation</b> · 종목정보변경절차 제○조<br><span class="mono">as_of 2025-07-01 · security_level 일반</span><br>조항 원문 …</div>
+      <div class="ev r"><b>regulation</b> · 참가사통보절차 제○조<br><span class="mono">as_of … · security_level 일반</span><br>조항 원문 …</div>
+      <div class="ev d"><b>dart</b> · 접수번호 20261020000311<br><span class="mono">제출일 2026-10-20 · as_of 2026-10-27</span><br>[DART 가나전자(가상) 주식분할결정] + 원문 앞부분</div>
+    </div>
+    <p class="note">조항 번호의 ○는 예시입니다. 공시 접수번호와 날짜는 녹화 응답 값입니다.</p>
+  </section>
+
+  <!-- ⑤ 비교 -->
+  <section class="panel" id="p-cmp">
+    <p class="lead">결합 질문 10건, 강사 실행 기록입니다. 막대를 다시 그리려면 탭을 다시 누릅니다.</p>
+    <div class="cmp">
+      <div class="card">
+        <h3>단일 에이전트 <code>day2/single_agent.py</code></h3>
+        <ul style="margin:4px 0;padding-left:18px">
+          <li>에이전트 1개가 도구 6개를 모두 가짐</li>
+          <li><span class="tool">hybrid_search</span><span class="tool">read_source</span><span class="tool">grep</span><span class="tool">read_file</span><span class="tool">search_disclosures</span><span class="tool">get_disclosure_document</span></li>
+          <li>3-1 공용 루프(최대 10회) + 마지막 구조화 출력</li>
+          <li>감독자, 작성자 분리, 검증자 없음</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="metric"><h4>정답 근거 포함 (많을수록 좋음)</h4>
+          <div class="bar-row"><span>단일</span><div class="bar"><i class="s" data-w="40"></i></div><span>4/10</span></div>
+          <div class="bar-row"><span>멀티 (3-2)</span><div class="bar"><i class="m" data-w="60"></i></div><span>6/10</span></div></div>
+        <div class="metric"><h4>질문당 입력 토큰 (적을수록 좋음)</h4>
+          <div class="bar-row"><span>단일</span><div class="bar"><i class="s" data-w="39"></i></div><span>16,798</span></div>
+          <div class="bar-row"><span>멀티 (3-2)</span><div class="bar"><i class="m" data-w="100"></i></div><span>42,563</span></div></div>
+        <div class="metric"><h4>평균 지연 (짧을수록 좋음)</h4>
+          <div class="bar-row"><span>단일</span><div class="bar"><i class="s" data-w="49"></i></div><span>20.7초</span></div>
+          <div class="bar-row"><span>멀티 (3-2)</span><div class="bar"><i class="m" data-w="100"></i></div><span>42.6초</span></div></div>
+        <div class="metric" style="margin:0"><h4>질문당 비용</h4>
+          <div class="bar-row"><span>단일</span><div class="bar"><i class="s" data-w="43"></i></div><span>$0.003</span></div>
+          <div class="bar-row"><span>멀티 (3-2)</span><div class="bar"><i class="m" data-w="100"></i></div><span>$0.007</span></div></div>
+      </div>
+    </div>
+    <p class="note">멀티가 근거를 더 잘 찾았지만 토큰은 약 2.5배, 지연은 약 2배입니다. 출처 누락은 둘 다 2건입니다. 어느 쪽을 쓸지는 이 숫자로 설명합니다.</p>
+  </section>
+
+  <!-- ⑥ 실제 질문 -->
+  <section class="panel" id="p-real">
+    <div class="qa">
+      <div class="card">
+        <h3>실제 회사(예: 삼성전자)로 질문하려면</h3>
+        <ol style="margin:4px 0;padding-left:20px">
+          <li><code>lab\.env</code>에 각자 발급한 <code>DART_API_KEY</code></li>
+          <li><code>lab\data\companies.json</code>에 회사 등록<br><span class="mono">"삼성전자": {"corp_name": "삼성전자", "corp_code": "00126380"}</span></li>
+          <li><code>lab\1028\3-2</code>에서 실행</li>
+        </ol>
+        <pre class="cmd">python -m day2.agents "삼성전자의 최근 1개월 주요 공시 원문을 읽고 요약해 주고, 그 공시로 종목정보를 바꿔야 한다면 사내 규정상 참가사에 언제까지 배포해야 하나?" --role staff</pre>
+        <p class="note" style="margin-bottom:0">가상 회사(A사, B사)는 키가 있어도 녹화 응답을 씁니다. 실제 회사는 키가 없으면 녹화 파일이 없어 오류가 납니다.</p>
+      </div>
+      <div class="card">
+        <h3>공시 본문이 안 나올 때</h3>
+        <p>본문은 공시 담당이 <span class="tool">get_disclosure_document</span>를 <b>따로 불러야</b> 가져옵니다. 목록 조회(<span class="tool">search_disclosures</span>)에는 제목, 접수번호, 제출일만 있습니다.</p>
+        <ul style="padding-left:18px">
+          <li>질문이 "공시 정보를 보여 달라"면 LLM이 목록만으로 충분하다고 보고 본문 도구를 부르지 않을 수 있습니다. "원문을 읽고 요약해" 처럼 본문이 필요하다고 적습니다.</li>
+          <li>실행 출력의 <code>도구: disclosure …</code> 줄에서 <code>get_disclosure_document</code>가 불렸는지 확인합니다.</li>
+          <li>원문은 앞부분 4,000자까지만 가져오고, 작성자에게는 그중 1,500자까지만 근거로 넘어갑니다.</li>
+          <li>본문만 바로 보려면: <span class="mono">python ..\3-1\day2\dart_cli.py document --rcept-no 접수번호</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// ---------- 탭 ----------
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(t => t.addEventListener("click", () => {
+  tabs.forEach(x => x.classList.toggle("on", x === t));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === "p-" + t.dataset.t));
+  if (t.dataset.t === "cmp") drawBars();
+  if (t.dataset.t === "flow") requestAnimationFrame(drawEdges);
+}));
+
+// ---------- 흐름 재생 ----------
+const Q = "A사 주식분할에 따른 종목정보 변경 정보는 언제까지 참가사에 배포해야 하나?";
+const EDGES = [["n-start","n-sup"],["n-sup","n-reg"],["n-sup","n-dis"],["n-reg","n-dis"],["n-reg","n-col"],["n-dis","n-col"],
+  ["n-col","n-wri"],["n-wri","n-ver"],["n-ver","n-app"],["n-app","n-mask"],["n-mask","n-aud"],["n-aud","n-end"],["n-ver","n-reg","back"]];
+
+function st(o){ return o; }
+const BASE = [
+  {node:"n-start", who:"입력", title:"질문이 들어옵니다",
+   body:`<p>질문과 질문한 사람의 역할(<code>role</code>)이 공유 state에 들어갑니다.</p>`,
+   state:{question:Q, role:"staff"}, nw:["question","role"]},
+  {node:"n-sup", edge:["n-start","n-sup"], who:"supervisor · LLM 1번", title:"감독자가 일을 나눕니다",
+   body:`<p>LLM이 구조화 출력 <code>Plan</code>으로 담당별 하위 질문을 만듭니다. 감독자는 도구를 쓰지 않습니다.</p><p>규정 담당은 항상 들어갑니다.</p>`,
+   add:{tasks:{regulation:"주식분할로 종목정보가 바뀔 때 참가사 배포 기한(사내 규정)", disclosure:"A사 주식분할 공시의 접수번호와 제출일"}}, nw:["tasks"]},
+  {node:"n-reg", edge:["n-sup","n-reg"], who:"regulation · 서브그래프", title:"규정 담당이 조사합니다",
+   body:`<p><code>Send</code>로 <b>하위 질문만</b> 받아, 1일차 에이전틱 그래프를 통째로 실행합니다.</p><p><span class="tool">hybrid_search</span><span class="tool">grep</span><span class="tool">read_file</span> 을 골라 반복 호출(최대 8회)</p><p>돌려주는 것: 요약 1개, 인용한 조항 원문(evidence)</p>`,
+   add:{summaries:["[regulation] 주식분할 시 종목정보 변경 정보는 … 까지 배포"], evidence:["regulation · 종목정보변경절차 제○조 (2025-07-01)"], tool_log:["regulation hybrid_search", "regulation read_file"]}, nw:["summaries","evidence","tool_log"]},
+  {node:"n-dis", edge:["n-reg","n-dis"], who:"disclosure · MCP 도구", title:"공시 담당이 조사합니다 (3-2는 차례로)",
+   body:`<p>규정 담당이 끝나면 다음 담당으로 넘어갑니다. 3-3에서는 둘이 동시에 실행됩니다.</p><p><span class="tool">search_disclosures(corp="A사")</span> → 목록<br><span class="tool">get_disclosure_document("20261020000311")</span> → 원문</p><p>요약에 실제로 적은 접수번호만 evidence로 남깁니다.</p>`,
+   addAcc:{summaries:"[disclosure] A사 주식분할결정 (접수번호 20261020000311, 제출일 2026-10-20)", evidence:"dart · 20261020000311 (2026-10-20)", tool_log:"disclosure search_disclosures"}, nw:["summaries","evidence","tool_log"]},
+  {node:"n-col", edge:["n-dis","n-col"], who:"collect", title:"조사 결과가 모입니다",
+   body:`<p>아무 계산도 하지 않는 합류 지점입니다. 여러 담당의 <code>summaries</code>, <code>evidence</code>가 덮어쓰이지 않고 이어 붙어 있습니다(누적 항목).</p>`, nw:[]},
+  {node:"n-wri", edge:["n-col","n-wri"], who:"writer · LLM 1번", title:"작성자가 답을 씁니다",
+   body:`<p><b>최종 답은 여기서만</b> 씁니다. evidence만 근거로 쓰고, 규정 우선, 공시는 접수번호와 제출일을 함께 적습니다.</p><p>구조화 출력 <code>Answer</code>: answer, citations, sufficient</p>`,
+   add:{answer:"… 사내 규정에 따라 …까지 배포해야 합니다. (A사 주식분할결정, 접수번호 20261020000311, 2026-10-20)",
+        citations:["종목정보변경절차 제○조 2025-07-01","DART 20261020000311 2026-10-20"]}, nw:["answer","citations"]},
+  {node:"n-ver", edge:["n-wri","n-ver"], who:"verifier · 규칙", title:"검증자가 인용을 확인합니다",
+   body:`<p>LLM 없이 규칙으로 확인합니다.</p><ul><li>① 조항이 원문에 있나 ✔</li><li>② 현행 시행일 판인가 ✔</li><li>③ 역할(staff)이 볼 수 있는 등급인가 ✔</li><li>④ 공시 접수번호가 실제로 조회됐나 ✔</li></ul>`,
+   add:{verify_issues:[], retries:0}, nw:["verify_issues","retries"]},
+  {node:"n-app", edge:["n-ver","n-app"], who:"approve", title:"승인 (4-2부터 동작)", body:`<p>3-2에는 <code>guard.py</code>가 없어서 그대로 통과합니다. 4-2부터 비밀 등급 인용이면 여기서 멈추고 사람의 승인을 기다립니다.</p>`, nw:[]},
+  {node:"n-mask", edge:["n-app","n-mask"], who:"mask_pii", title:"개인정보 마스킹 (4-2부터 동작)", body:`<p>3-2에서는 통과. 4-2부터 이름·연락처를 가립니다.</p>`, nw:[]},
+  {node:"n-aud", edge:["n-mask","n-aud"], who:"audit", title:"감사 로그 (4-2부터 동작)", body:`<p>3-2에서는 통과. 4-2부터 질의·근거·결과를 <code>logs/audit.jsonl</code>에 남깁니다.</p>`, nw:[]},
+  {node:"n-end", edge:["n-aud","n-end"], who:"END", title:"답이 나갑니다",
+   body:`<p>출력: <code>answer</code>, <code>citations</code>, <code>contexts</code>(evidence 원문), <code>tool_log</code>. 평가 러너는 이 출력을 결과 파일 한 줄로 저장합니다.</p>`, nw:[]},
+];
+const FAIL = [
+  {node:"n-ver", edge:["n-wri","n-ver"], who:"verifier · 규칙", title:"검증 실패: 개정 전 판을 인용",
+   body:`<p>② 현행 시행일 판이 아닙니다. 지적 앞에 담당 이름이 붙습니다.</p><p class="mono">regulation: 종목정보변경절차 제○조는 현행 시행일 … 판을 인용해야 함</p><p>되돌림은 최대 1회입니다(<code>retries 0 → 1</code>).</p>`,
+   add:{verify_issues:["regulation: … 현행 시행일 … 판을 인용해야 함"], retries:1}, nw:["verify_issues","retries"]},
+  {node:"n-reg", edge:["n-ver","n-reg"], back:true, who:"regulation · 다시", title:"규정 담당에게만 되돌립니다",
+   body:`<p>지적이 붙은 담당에게만 <code>Send</code>합니다. 질문 뒤에 지적이 붙어 갑니다.</p><p class="mono">… (검증자 지적: … 현행 시행일 판을 인용해야 함)</p><p>공시 담당은 다시 부르지 않습니다.</p>`,
+   add:{feedback:"regulation: … 현행 시행일 판을 인용해야 함"}, addAcc:{evidence:"regulation · 종목정보변경절차 제○조 (현행판)", summaries:"[regulation] (다시 조사) …"}, nw:["feedback","evidence","summaries"]},
+  {node:"n-col", edge:["n-reg","n-col"], who:"collect", title:"다시 모읍니다", body:`<p>새 근거가 기존 evidence 뒤에 붙습니다.</p>`, nw:[]},
+  {node:"n-wri", edge:["n-col","n-wri"], who:"writer", title:"작성자가 다시 씁니다", body:`<p>현행판 조항으로 답과 인용을 고칩니다.</p>`,
+   add:{citations:["종목정보변경절차 제○조 (현행판)","DART 20261020000311 2026-10-20"]}, nw:["citations"]},
+  {node:"n-ver", edge:["n-wri","n-ver"], who:"verifier", title:"다시 검증: 통과",
+   body:`<p>문제가 없으면 승인 단계로 갑니다. 이번에도 문제가 남았다면 <code>drop_bad</code>가 그 인용을 빼고, 남는 인용이 없으면 "문서에 없음"으로 거부합니다.</p>`,
+   add:{verify_issues:[]}, nw:["verify_issues"]},
+];
+function steps(){ return document.getElementById("failmode").checked ? [...BASE.slice(0,6), ...FAIL, ...BASE.slice(7)] : BASE; }
+
+let cur = 0, timer = null;
+const statebox = document.getElementById("statebox"), msg = document.getElementById("msg"), board = document.getElementById("board");
+
+function buildState(upto){
+  const S = {};
+  const list = steps();
+  for (let i = 0; i <= upto; i++){
+    const s = list[i];
+    if (s.state) Object.assign(S, JSON.parse(JSON.stringify(s.state)));
+    if (s.add) Object.assign(S, JSON.parse(JSON.stringify(s.add)));
+    if (s.addAcc) for (const [k,v] of Object.entries(s.addAcc)) S[k] = [...(S[k] || []), v];
+  }
+  return S;
+}
+function renderState(S, nw){
+  const lines = ["{"];
+  const keys = Object.keys(S);
+  keys.forEach((k, i) => {
+    const v = JSON.stringify(S[k], null, 1).replace(/\n\s*/g, " ");
+    const esc = (k + ": " + v).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+    const line = "  " + esc + (i < keys.length - 1 ? "," : "");
+    lines.push(nw.includes(k) ? `<span class="new">${line}</span>` : line);
+  });
+  lines.push("}");
+  statebox.innerHTML = lines.join("\n");
+}
+function center(id){
+  const b = board.getBoundingClientRect(), r = document.getElementById(id).getBoundingClientRect();
+  return {x: r.left - b.left + r.width/2, y: r.top - b.top + r.height/2, w: r.width, h: r.height};
+}
+function drawEdges(hot){
+  const svg = document.getElementById("edges");
+  const b = board.getBoundingClientRect();
+  svg.setAttribute("viewBox", `0 0 ${b.width} ${b.height}`);
+  svg.innerHTML = EDGES.map(([a, c, kind]) => {
+    const p = center(a), q = center(c);
+    let d;
+    if (kind === "back"){
+      const x = Math.max(p.x + p.w/2, q.x + q.w/2) + 40;
+      d = `M${p.x + p.w/2},${p.y} C${x},${p.y} ${x},${q.y} ${q.x + q.w/2},${q.y}`;
+    } else if (Math.abs(p.y - q.y) < 5){
+      d = `M${p.x + (q.x > p.x ? p.w/2 : -p.w/2)},${p.y} L${q.x + (q.x > p.x ? -q.w/2 : q.w/2)},${q.y}`;
+    } else {
+      const y1 = p.y + p.h/2, y2 = q.y - q.h/2, my = (y1 + y2)/2;
+      d = `M${p.x},${y1} C${p.x},${my} ${q.x},${my} ${q.x},${y2}`;
+    }
+    const isHot = hot && hot[0] === a && hot[1] === c;
+    return `<path d="${d}" class="${isHot ? "hot" : ""} ${kind === "back" ? "back" : ""}"/>`;
+  }).join("");
+}
+function show(i){
+  const list = steps();
+  cur = Math.max(0, Math.min(i, list.length - 1));
+  const s = list[cur];
+  document.querySelectorAll(".nd").forEach(n => n.classList.remove("active","done"));
+  const visited = new Set(list.slice(0, cur).map(x => x.node));
+  visited.forEach(id => document.getElementById(id).classList.add("done"));
+  const el = document.getElementById(s.node);
+  el.classList.remove("done"); el.classList.add("active");
+  drawEdges(s.edge);
+  const tok = document.getElementById("token"), c = center(s.node);
+  tok.style.opacity = 1; tok.style.left = (c.x - 8) + "px"; tok.style.top = (c.y - c.h/2 - 18) + "px";
+  msg.innerHTML = `<h3>${cur + 1}. ${s.title}<span class="who">${s.who}</span></h3>${s.body}`;
+  renderState(buildState(cur), s.nw || []);
+  document.getElementById("stepno").textContent = `${cur + 1} / ${list.length}`;
+  document.getElementById("prev").disabled = cur === 0;
+  document.getElementById("next").disabled = cur === list.length - 1;
+}
+function stop(){ clearInterval(timer); timer = null; document.getElementById("play").textContent = "▶ 재생"; }
+document.getElementById("play").onclick = () => {
+  if (timer) return stop();
+  if (cur >= steps().length - 1) show(0);
+  document.getElementById("play").textContent = "❚❚ 멈춤";
+  timer = setInterval(() => { if (cur >= steps().length - 1) return stop(); show(cur + 1); }, 2200);
+};
+document.getElementById("next").onclick = () => { stop(); show(cur + 1); };
+document.getElementById("prev").onclick = () => { stop(); show(cur - 1); };
+document.getElementById("reset").onclick = () => { stop(); show(0); };
+document.getElementById("failmode").onchange = () => { stop(); show(0); };
+window.addEventListener("resize", () => show(cur));
+document.fonts && document.fonts.ready.then(() => show(cur));
+show(0);
+
+// ---------- 역할 카드 ----------
+document.querySelectorAll(".role").forEach(r => r.addEventListener("click", () => r.classList.toggle("open")));
+
+// ---------- 소통 시퀀스 ----------
+const COLS = 6;
+const SEQ = [
+  [1, 0, "tasks 저장", "self"],
+  [1, 2, "Send(regulation, {하위 질문, role})"],
+  [2, 0, "summaries, evidence, tool_log 추가"],
+  [1, 3, "Send(disclosure, {하위 질문, role})"],
+  [3, 0, "summaries, evidence, tool_log 추가"],
+  [0, 4, "evidence + summaries 읽기"],
+  [4, 0, "answer, citations 저장"],
+  [0, 5, "citations, evidence 읽기"],
+  [5, 2, "(실패 시) Send(regulation, {질문 + 검증자 지적})", "back"],
+  [5, 0, "verify_issues 저장 → 통과", "self"],
+];
+const msgs = document.getElementById("msgs");
+SEQ.forEach(([a, b, label, kind]) => {
+  const d = document.createElement("div");
+  const pct = i => ((i + 0.5) / COLS) * 100;
+  if (kind === "self"){
+    d.className = "m self";
+    d.innerHTML = `<div class="box" style="left:calc(${pct(a)}% + 6px)">${label}</div>`;
+  } else {
+    const left = Math.min(pct(a), pct(b)), w = Math.abs(pct(a) - pct(b));
+    d.className = "m " + (b > a ? "r" : "l") + (kind === "back" ? " back" : "");
+    d.innerHTML = `<div class="line" style="left:${left}%;width:${w}%"></div><div class="lbl" style="left:${left + 1}%"><b>${label}</b></div>`;
+  }
+  msgs.appendChild(d);
+});
+document.getElementById("seqplay").onclick = () => {
+  const all = msgs.querySelectorAll(".m");
+  all.forEach(m => m.classList.remove("show"));
+  all.forEach((m, i) => setTimeout(() => m.classList.add("show"), 450 * (i + 1)));
+};
+msgs.querySelectorAll(".m").forEach(m => m.classList.add("show"));
+
+// ---------- evidence 쌓기 ----------
+document.getElementById("evplay").onclick = () => {
+  const evs = document.querySelectorAll(".ev");
+  evs.forEach(e => e.classList.remove("in"));
+  evs.forEach((e, i) => setTimeout(() => e.classList.add("in"), 500 * (i + 1)));
+};
+document.querySelectorAll(".ev").forEach(e => e.classList.add("in"));
+
+// ---------- 막대 ----------
+function drawBars(){
+  const bars = document.querySelectorAll(".bar i");
+  bars.forEach(b => b.style.width = 0);
+  setTimeout(() => bars.forEach(b => b.style.width = b.dataset.w + "%"), 60);
+}
+</script>
+</body>
+</html>
